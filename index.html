@@ -627,6 +627,38 @@ textarea.answer:focus{border-color:#ffb8cc;box-shadow:0 0 0 5px rgba(255,164,190
 .mini-row{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);font-size:12.5px;line-height:1.6}
 .mini-row .k{flex:0 0 78px;font-weight:650;color:#b04a69}
 .mini-row .v{flex:1;min-width:0;color:var(--ink-2)}
+
+/* ============================================================
+   进阶练习（改进版 · 三阶段复述）
+   ============================================================ */
+.stage-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.stage-dot{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;
+  background:rgba(255,255,255,.72);border:1.5px solid rgba(255,255,255,.95);
+  font-size:12px;color:var(--muted);font-weight:600}
+.stage-dot .n{width:18px;height:18px;border-radius:999px;display:grid;place-items:center;
+  font-size:11px;background:rgba(255,255,255,.9);color:var(--ink-2);font-weight:700}
+.stage-dot.on{background:linear-gradient(150deg,#ffd8e4,#ffb6cb);color:#7a3f52;border-color:transparent;
+  box-shadow:0 10px 20px -14px rgba(226,104,140,.95),inset 0 1px 0 rgba(255,255,255,.8)}
+.stage-dot.done{background:var(--green-soft);color:#4d6754;border-color:transparent}
+.revise-box{padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.78);
+  border:1.5px solid rgba(255,255,255,.95);font-size:13.5px;line-height:1.95;
+  white-space:pre-wrap;color:var(--ink-2);box-shadow:inset 0 1px 0 #fff}
+.kw-cloud{display:flex;flex-wrap:wrap;gap:8px}
+.kw{padding:7px 13px;border-radius:999px;font-size:12.5px;font-weight:650;color:#7a4a5f;
+  background:linear-gradient(150deg,#ffe3ec,#f3e4ff);border:1.5px solid rgba(255,255,255,.95);
+  box-shadow:0 8px 16px -14px rgba(200,120,160,.9)}
+.blind-box{padding:26px 20px;border-radius:18px;border:1.5px dashed rgba(226,104,140,.42);
+  background:rgba(255,255,255,.55);text-align:center;color:var(--muted);font-size:12.5px;line-height:1.8}
+.diff-row{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.66);
+  border:1px solid rgba(255,255,255,.95);margin-bottom:8px;font-size:12.5px;line-height:1.65}
+.diff-row .t{display:flex;gap:8px;align-items:center;margin-bottom:5px}
+.diff-row .from{color:#9a6a76;text-decoration:line-through;opacity:.85}
+.diff-row .to{color:#3f7d63;font-weight:600}
+.diff-row .why{color:var(--muted);font-size:11.5px;margin-top:3px}
+.attempt-row{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;
+  background:rgba(255,255,255,.66);border:1px solid rgba(255,255,255,.95);font-size:12.5px}
+.attempt-row .k{flex:0 0 96px;font-weight:650;color:#7a4a5f}
+.attempt-row .v{flex:1;color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -947,7 +979,7 @@ function renderLangSwitch(){
   document.querySelectorAll('#langSwitch button').forEach(b=> b.classList.toggle('on', b.dataset.lang === app.lang));
 }
 
-const ROUTES = ['home','topic','prep','search','answer','result','history','errors','settings','guide'];
+const ROUTES = ['home','topic','prep','search','answer','result','drill','history','errors','settings','guide'];
 
 function setView(name, data){
   clearTick();
@@ -967,7 +999,7 @@ function render(){
   const v = document.getElementById('view');
   const fn = ({
     home:viewHome, topic:viewTopic, prep:viewPrep, search:viewSearch,
-    answer:viewAnswer, result:viewResult, history:viewHistory,
+    answer:viewAnswer, result:viewResult, drill:viewDrill, history:viewHistory,
     errors:viewErrors, settings:viewSettings, guide:viewGuide
   })[app.view] || viewHome;
   v.innerHTML = fn();
@@ -983,12 +1015,13 @@ function renderTopbar(){
     search: app.lang==='zh'?'自主检索':'Research',
     answer: app.lang==='zh'?'作答中':'Answering',
     result: app.lang==='zh'?'复盘结果':'Review',
+    drill: app.lang==='zh'?'三阶段复述':'3-stage retell',
     history: app.lang==='zh'?'历史记录':'History',
     errors: app.lang==='zh'?'错误集锦':'Error bank',
     settings: app.lang==='zh'?'设置':'Settings',
     guide: app.lang==='zh'?'配置指南':'Setup guide'
   };
-  const backTo = {topic:'home', prep:'topic', search:'topic', answer: app.mode==='retell' ? 'search' : 'prep', result:'home', guide:'settings'}[app.view];
+  const backTo = {topic:'home', prep:'topic', search:'topic', answer: app.mode==='retell' ? 'search' : 'prep', result:'home', drill:'result', guide:'settings'}[app.view];
   const backBtn = backTo ? '<button class="back" data-back="' + backTo + '" aria-label="back">←</button>' : '';
   const ctx = app.view === 'answer' || app.view === 'prep' || app.view === 'search' || app.view === 'topic'
     ? '<span class="pill mono">' + esc(app.lang==='zh'?'中文':'EN') + ' · ' + esc(app.mode==='retell'?(app.lang==='zh'?'概念复述':'Retell'):(app.lang==='zh'?'即兴演讲':'Impromptu')) + '</span>'
@@ -1465,7 +1498,7 @@ function viewAnswer(){
   return '' +
   '<div class="card">' +
     '<div class="spread">' +
-      '<span class="pill accent">' + esc(isRetell ? (zh?'复述作答':'Retelling') : (zh?'即兴作答':'Impromptu answer')) + '</span>' +
+      '<span class="pill accent">' + esc(s.drill ? (zh?'复述练习 · 第 ' + s.drill.stage + ' 段':'Retell · stage ' + s.drill.stage) : (isRetell ? (zh?'复述作答':'Retelling') : (zh?'即兴作答':'Impromptu answer'))) + '</span>' +
       '<span class="pill mono">' + (limit ? fmtClock(limit) + ' · ' + esc(LEVELS[app.level][app.lang]) : esc(zh?'不限时':'untimed')) + '</span>' +
     '</div>' +
     '<div class="timer-wrap" style="margin-top:12px">' +
@@ -1475,6 +1508,7 @@ function viewAnswer(){
     '</div>' +
   '</div>' +
 
+  (s.drill ? drillMaterial(s, zh) :
   '<div class="topic-pin">' +
     '<div class="mark">' + esc(isRetell ? (zh?'概念':'Concept') : (zh?'题目':'Prompt')) + '</div>' +
     '<div class="body">' +
@@ -1483,7 +1517,7 @@ function viewAnswer(){
       (isRetell ? '<div class="tiny muted" style="margin-top:6px">' + esc(zh?'已回看 ':'Peeked ') + s.recall.used + '/' + s.recall.allowed + '</div>' : '') +
     '</div>' +
     (isRetell ? '<button class="btn sm ghost" id="peek" ' + (s.recall.used >= s.recall.allowed ? 'disabled' : '') + '>' + esc(zh?'短暂回看':'Peek') + '</button>' : '') +
-  '</div>' +
+  '</div>') +
 
   '<div class="card">' +
     '<div class="row" style="justify-content:space-between;margin-bottom:12px">' +
@@ -1516,13 +1550,13 @@ function viewAnswer(){
 
     '<div class="answer-meta">' +
       '<span id="metaTime">' + esc(zh?'已用 0 秒':'0s elapsed') + '</span>' +
-      '<span>' + esc(zh?'目标时长 ':'Target ') + (limit ? fmtDuration(limit) : esc(zh?'不限':'none')) + '</span>' +
-      '<span>' + esc(zh?'题面全程可见':'Prompt stays visible') + '</span>' +
+      '<span>' + esc(s.drill ? (zh?'不限时 · 复述':'untimed · retell') : ((zh?'目标时长 ':'Target ') + (limit ? fmtDuration(limit) : esc(zh?'不限':'none')))) + '</span>' +
+      '<span>' + esc(s.drill ? (zh?'提示按当前阶段给出':'Hints follow the stage') : (zh?'题面全程可见':'Prompt stays visible')) + '</span>' +
     '</div>' +
     '<div class="divider"></div>' +
     '<div class="row" style="justify-content:space-between">' +
-      '<span class="tiny muted">' + esc(zh?'提交后原文与评分只存本地':'Saved locally only') + '</span>' +
-      '<button class="btn primary" id="submitBtn">' + esc(zh?'提交并评分':'Submit & score') + ' →</button>' +
+      '<span class="tiny muted">' + esc(s.drill ? (zh?'复述不评分，只记录字数与时长':'No scoring — only length and time are recorded') : (zh?'提交后原文与评分只存本地':'Saved locally only')) + '</span>' +
+      '<button class="btn primary" id="submitBtn">' + esc(s.drill ? (s.drill.stage < 3 ? (zh?'完成这一段':'Finish stage') + ' →' : (zh?'完成并看对比':'Finish & compare') + ' →') : (zh?'提交并评分':'Submit & score')) + ' →</button>' +
     '</div>' +
   '</div>';
 }
@@ -1743,6 +1777,7 @@ function stopVoice(silent){
 function submitAnswer(auto){
   const s = app.session;
   if(!s || submitted) return;
+  if(s.drill){ finishDrillStage(auto); return; }
   const ta = document.getElementById('answerText');
   if(ta) s.content.text = ta.value;
   const text = (s.content.text || '').trim();
@@ -1863,6 +1898,27 @@ function fetchFailHint(){
     : 'Blocked by CORS (Failed to fetch). Most official APIs refuse browser calls — set Endpoint to http://localhost:8787/v1 and run start-web.bat.';
 }
 
+function explainAIError(status, body){
+  const zh = app.lang === 'zh';
+  const txt = String(body || '');
+  if(/ModelNotOpen/.test(txt)){
+    const m = (txt.match(/model\s+([A-Za-z0-9._-]+)/) || [])[1] || '';
+    return zh
+      ? '模型未开通：' + m + '。去方舟控制台「开通管理」勾选这个模型（或点设置里的「自动挑」换一个已开通的），开通一般即时生效。'
+      : 'Model not activated: ' + m + '. Enable it in the Ark console under "Model activation".';
+  }
+  if(/InvalidEndpointOrModel|NotFound/i.test(txt)){
+    return zh
+      ? '方舟找不到这个模型/接入点。检查 Model 是否和控制台「模型列表」完全一致，或改用 ep- 接入点 ID。'
+      : 'Model or endpoint not found — check the Model ID against the console.';
+  }
+  if(status === 401) return zh ? 'Key 不对或没带上：检查密钥是否粘全、是否属于当前账号。' : 'Bad or missing key.';
+  if(status === 403) return zh ? 'Key 没有该模型的权限，或账号未实名。' : 'Key lacks permission, or the account is unverified.';
+  if(status === 429) return zh ? '额度用尽或请求太快：充值或降低频率。' : 'Quota or rate limit.';
+  if(status === 502) return zh ? '代理连不上方舟：检查网络或代理软件。' : 'Proxy could not reach Ark.';
+  return '';
+}
+
 async function callAI(s){
   const ai = settings.ai;
   const url = aiEndpoint();
@@ -1908,13 +1964,79 @@ async function callAI(s){
   }finally { clearTimeout(to); }
   if(!res.ok){
     const txt = await res.text().catch(()=> '');
-    throw new Error('HTTP ' + res.status + ' ' + txt.slice(0, 140));
+    const hint = explainAIError(res.status, txt);
+    throw new Error(hint || ('HTTP ' + res.status + ' ' + txt.slice(0, 140)));
   }
   const data = await res.json();
   const raw = (data.choices && data.choices[0] && (data.choices[0].message ? data.choices[0].message.content : data.choices[0].text)) || '';
   const parsed = extractJSON(raw);
   if(!parsed) throw new Error('AI 返回内容无法解析为 JSON');
   return normalizeReview(parsed, s);
+}
+
+/* ---------- 改进版：在原文基础上做必要修改，不重写 ---------- */
+async function callRevise(s){
+  const ai = settings.ai;
+  const url = aiEndpoint();
+  if(!url || !ai.model) throw new Error('AI not configured');
+  const langName = s.language === 'en' ? 'English' : '中文';
+  const sys = [
+    '你是一位表达教练。学员刚完成一次' + (s.language==='en'?'英语':'中文') + (s.mode==='retell'?'概念复述':'即兴表达') + '，题目是：「' + s.topic + '」。',
+    '任务：在他的原文基础上给出一版「改进稿」。',
+    '硬性约束：',
+    '1) 必须保留原文的观点、结构骨架与说话人语感，只做必要修改（语法、用词与搭配、连接与衔接、逻辑顺序、补足缺失的支撑细节）。',
+    '2) 不得整篇重写成另一篇文章；改动幅度控制在局部，改后长度约为原文的 0.9–1.15 倍。',
+    '3) 修改后仍然是可以自然说出口的口语/写作，不要堆砌华丽辞藻，不要加原文没有的新论点。',
+    '4) 语言与原文一致：' + langName + '。',
+    '只输出一个 JSON 对象，不要 Markdown、代码块或解释。',
+    'JSON 结构：{"revised":string,"changes":[{"type":"语法|用词|结构|内容","original":string,"fixed":string,"why":string}],"keywords":[string]}',
+    'changes 取 3–8 条最有代表性的（original 与 fixed 为原文与改后的逐字片段）；keywords 取 6–10 个能提示复述的短词或短语，不要整句。',
+  ].join('\n');
+  const ctrl = new AbortController();
+  const to = setTimeout(()=> ctrl.abort(), 60000);
+  let res;
+  try{
+    res = await fetch(url, {
+      method:'POST',
+      headers: Object.assign({'Content-Type':'application/json'}, ai.apiKey ? {'Authorization':'Bearer ' + ai.apiKey} : {}),
+      body: JSON.stringify({
+        model: ai.model,
+        temperature: 0.3,
+        messages:[{role:'system', content:sys},{role:'user', content:JSON.stringify({
+          language: s.language, mode: s.mode, topic: s.topic,
+          original: s.content.text, wordCount: s.content.wordCount,
+          weakPoints: (s.review && s.review.improvements) || [],
+          knownErrors: (s.review && s.review.errors) || []
+        })}]
+      }),
+      signal: ctrl.signal
+    });
+  }catch(e){
+    if(e && e.name === 'AbortError') throw new Error('请求超时（60 秒）');
+    throw new Error(fetchFailHint());
+  }finally { clearTimeout(to); }
+  if(!res.ok){
+    const txt = await res.text().catch(()=> '');
+    throw new Error(explainAIError(res.status, txt) || ('HTTP ' + res.status + ' ' + txt.slice(0, 140)));
+  }
+  const data = await res.json();
+  const raw = (data.choices && data.choices[0] && (data.choices[0].message ? data.choices[0].message.content : data.choices[0].text)) || '';
+  const parsed = extractJSON(raw);
+  if(!parsed || !parsed.revised) throw new Error('改进版返回无法解析');
+  const changes = (Array.isArray(parsed.changes) ? parsed.changes : []).filter(c=> c && (c.fixed || c.original)).slice(0, 8);
+  let keywords = (Array.isArray(parsed.keywords) ? parsed.keywords : []).map(k=> String(k).trim()).filter(Boolean);
+  if(keywords.length < 3) keywords = fallbackKeywords(parsed.revised);
+  return { revised: String(parsed.revised).trim(), changes, keywords: keywords.slice(0, 12), at: new Date().toISOString() };
+}
+
+function fallbackKeywords(text){
+  const out = [];
+  const zh = text.match(/[\u4e00-\u9fa5]{2,4}/g) || [];
+  const en = text.match(/\b[A-Za-z][A-Za-z'-]{3,}\b/g) || [];
+  const counts = {};
+  (zh.length ? zh : en).forEach(w=>{ counts[w] = (counts[w]||0) + 1; });
+  Object.keys(counts).sort((a,b)=> counts[b]-counts[a]).forEach(w=>{ if(out.length < 8 && !out.includes(w)) out.push(w); });
+  return out;
 }
 
 function extractJSON(raw){
@@ -2192,6 +2314,13 @@ async function scoreSession(s){
   }
   s.review = review;
   s.scored = true;
+  if(source === 'ai'){
+    try{
+      s.revised = await callRevise(s);
+    }catch(e){
+      s.revised = { error: (e && e.message ? e.message : '改进版生成失败').slice(0, 160) };
+    }
+  }
   s.aiMeta = {
     model: source === 'ai' ? settings.ai.model : 'local-rule',
     scoredAt: new Date().toISOString(),
@@ -2233,6 +2362,66 @@ function aggregateErrors(s){
    ============================================================ */
 function currentRecord(){
   return app.viewData.record || app.session || null;
+}
+
+function reviseCard(s, zh){
+  const rv = s.revised;
+  const has = !!(rv && rv.revised);
+  const err = rv && rv.error;
+  const aiReady = !!(settings.ai.endpoint && settings.ai.model);
+  const head = '<div class="card-head"><h2>' + esc(zh?'改进版 · 只改必要的':'Revision — minimal edits') + '</h2>' +
+    '<span class="right pill ' + (has ? 'accent' : 'warm') + '">' + esc(has ? (zh?'AI 生成':'AI') : (zh?'未生成':'Not yet')) + '</span></div>';
+
+  if(has){
+    return '<div class="card">' + head +
+      '<p class="hint-line">' + esc(zh?'保留你的观点与结构，只修语法、用词、衔接，补上缺的支撑。':'Keeps your points and structure; fixes grammar, wording, flow and missing support.') + '</p>' +
+      '<div class="revise-box" style="margin-top:10px">' + esc(rv.revised) + '</div>' +
+      ((rv.changes && rv.changes.length)
+        ? '<div style="margin-top:14px"><div class="small" style="font-weight:650;margin-bottom:8px">' + esc(zh?'改了什么':'What changed') + '</div>' +
+            rv.changes.map(c=>'<div class="diff-row">' +
+              '<div class="t"><span class="pill warm">' + esc(c.type || (zh?'修改':'edit')) + '</span>' +
+                '<span class="from">' + esc(c.original || '') + '</span><span>→</span>' +
+                '<span class="to">' + esc(c.fixed || '') + '</span></div>' +
+              (c.why ? '<div class="why">' + esc(c.why) + '</div>' : '') +
+            '</div>').join('') + '</div>'
+        : '') +
+      ((rv.keywords && rv.keywords.length)
+        ? '<div style="margin-top:12px"><div class="small" style="font-weight:650;margin-bottom:8px">' + esc(zh?'复述关键词':'Keywords') + '</div>' +
+            '<div class="kw-cloud">' + rv.keywords.map(k=>'<span class="kw">' + esc(k) + '</span>').join('') + '</div></div>'
+        : '') +
+      '<div class="divider"></div>' +
+      '<div class="row" style="justify-content:space-between">' +
+        '<button class="btn primary" id="startDrill">' + esc(zh?'开始三阶段复述':'Start 3-stage retell') + ' →</button>' +
+        '<button class="btn ghost" id="repractice">' + esc(zh?'重新录制本题':'Re-record this topic') + '</button>' +
+      '</div>' +
+      '<p class="hint-line" style="margin-top:10px">' + esc(zh?'三阶段：① 照读全文 → ② 只看关键词 → ③ 空白复述。每段都能复盘，练完可再来一轮。':'Three stages: read the revision → keywords only → blank recall. Repeat any time.') + '</p>' +
+    '</div>';
+  }
+
+  if(err){
+    return '<div class="card">' + head +
+      '<p class="hint-line">' + esc(zh?'改进版没生成出来：':'Revision failed: ') + esc(err) + '</p>' +
+      '<div class="row" style="margin-top:10px">' +
+        '<button class="btn" id="makeRevise">' + esc(zh?'重试生成':'Retry') + '</button>' +
+        '<button class="btn ghost" id="repractice">' + esc(zh?'重新录制本题':'Re-record') + '</button>' +
+      '</div></div>';
+  }
+
+  if(aiReady){
+    return '<div class="card">' + head +
+      '<p class="hint-line">' + esc(zh?'这场还没有改进版（可能来自历史记录）。现在可以生成。':'No revision for this session yet — generate one now.') + '</p>' +
+      '<div class="row" style="margin-top:10px">' +
+        '<button class="btn" id="makeRevise">' + esc(zh?'生成改进版':'Generate revision') + '</button>' +
+        '<button class="btn ghost" id="repractice">' + esc(zh?'重新录制本题':'Re-record') + '</button>' +
+      '</div></div>';
+  }
+
+  return '<div class="card">' + head +
+    '<p class="hint-line">' + esc(zh?'改进版和关键词需要 AI。当前没有配置接口。':'A revision needs AI — no endpoint configured.') + '</p>' +
+    '<div class="row" style="margin-top:10px">' +
+      '<button class="btn" id="goSettings">' + esc(zh?'去配置':'Open settings') + ' →</button>' +
+      '<button class="btn ghost" id="repractice">' + esc(zh?'重新录制本题':'Re-record this topic') + '</button>' +
+    '</div></div>';
 }
 
 function viewResult(){
@@ -2324,6 +2513,8 @@ function viewResult(){
     '<p class="small" style="white-space:pre-wrap;line-height:1.75;color:var(--ink-2)">' + esc(s.content.text) + '</p>' +
   '</div>' +
 
+  reviseCard(s, zh) +
+
   '<div class="card flat">' +
     '<div class="row" style="justify-content:space-between">' +
       '<div class="row">' +
@@ -2331,7 +2522,10 @@ function viewResult(){
         '<button class="btn ghost" id="copySummary">' + esc(zh?'复制摘要':'Copy summary') + '</button>' +
         '<button class="btn ghost" id="rescore">' + esc(zh?'重新评分':'Rescore') + '</button>' +
       '</div>' +
-      '<button class="btn" id="again">' + esc(zh?'再来一题':'Next prompt') + ' →</button>' +
+      '<div class="row">' +
+        '<button class="btn" id="repracticeBar">' + esc(zh?'重新录制本题':'Re-record') + '</button>' +
+        '<button class="btn" id="again">' + esc(zh?'再来一题':'Next prompt') + ' →</button>' +
+      '</div>' +
     '</div>' +
     (s.aiMeta && s.aiMeta.error ? '<p class="hint-line" style="margin-top:10px">' + esc(zh?'AI 调用失败，已降级为本地估算：':'AI failed, fell back to local: ') + esc(s.aiMeta.error) + '</p>' : '') +
   '</div>';
@@ -2589,6 +2783,39 @@ function bindResult(){
   const again = document.getElementById('again');
   if(again) again.onclick = ()=>{ app.session = null; app.outline = ''; drawTopic(); };
 
+  const rep = document.getElementById('repractice');
+  if(rep) rep.onclick = ()=> repractice(s);
+  const repBar = document.getElementById('repracticeBar');
+  if(repBar) repBar.onclick = ()=> repractice(s);
+
+  const gs = document.getElementById('goSettings');
+  if(gs) gs.onclick = ()=> setView('settings');
+
+  const sd = document.getElementById('startDrill');
+  if(sd) sd.onclick = ()=>{
+    if(!s.revised || !s.revised.revised){ toast(app.lang==='zh'?'先有改进版才能练':'Generate a revision first'); return; }
+    startDrill(s, 1);
+  };
+
+  const mr = document.getElementById('makeRevise');
+  if(mr) mr.onclick = async ()=>{
+    const zh = app.lang === 'zh';
+    mr.disabled = true;
+    toast(zh ? '正在生成改进版…' : 'Generating revision…');
+    try{
+      s.revised = await callRevise(s);
+      const i = sessions.findIndex(x=> x.id === s.id);
+      if(i >= 0) sessions[i] = s;
+      saveSessions();
+      render();
+      toast(zh ? '改进版好了' : 'Revision ready');
+    }catch(e){
+      s.revised = { error: (e && e.message ? e.message : '生成失败').slice(0, 160) };
+      render();
+      toast(zh ? '生成失败' : 'Failed');
+    }
+  };
+
   const mk = document.getElementById('makeCard');
   if(mk) mk.onclick = ()=>{
     if(!s.scored) return;
@@ -2621,6 +2848,223 @@ function bindResult(){
     try{ await navigator.clipboard.writeText(txt); toast(app.lang==='zh'?'摘要已复制':'Summary copied'); }
     catch(e){ toast(app.lang==='zh'?'复制失败，请手动选择':'Copy failed'); }
   };
+}
+
+/* ============================================================
+   重新录制 / 三阶段复述练习
+   ============================================================ */
+const DRILL_STAGES = [
+  { k:1, zh:'照读全文', en:'Read it' },
+  { k:2, zh:'只看关键词', en:'Keywords' },
+  { k:3, zh:'空白复述', en:'Blank recall' }
+];
+
+function repractice(s){
+  if(!s) return;
+  app.session = null;
+  app.outline = '';
+  app.prepSec = 0;
+  app.searchSec = 0;
+  app.mode = s.mode;
+  app.lang = s.language;
+  app.level = s.level;
+  app.inputType = s.inputType;
+  const zh0 = s.language === 'zh' ? s.topic : (s.topicAlt || s.topic);
+  const en0 = s.language === 'zh' ? (s.topicAlt || s.topic) : s.topic;
+  app.current = s.isConcept
+    ? { zh: zh0, en: en0, concept: true, dom: s.category }
+    : { zh: zh0, en: en0, cat: s.category };
+  setView(s.mode === 'retell' ? 'search' : 'prep');
+  toast(app.lang === 'zh' ? '同一道题，重新来一遍' : 'Same topic — fresh run');
+}
+
+function startDrill(rec, round){
+  app.drill = { recId: rec.id, round: round || 1, stage: 1, done: false };
+  app.session = null;
+  setView('drill');
+}
+
+function drillRecord(){
+  if(!app.drill) return null;
+  return sessions.find(x=> x.id === app.drill.recId) || null;
+}
+
+function drillMaterial(s, zh){
+  const d = app.drill || {};
+  const rec = drillRecord();
+  const rv = (rec && rec.revised) || {};
+  if(!rv.revised) return '<div class="card"><div class="blind-box">' + esc(zh?'没有改进版可用':'No revision available') + '</div></div>';
+  if(d.stage === 1){
+    return '<div class="card">' +
+      '<div class="card-head"><h2>' + esc(zh?'第 1 段 · 照读全文':'Stage 1 · Read it') + '</h2>' +
+      '<span class="right pill accent">' + esc(zh?'照着读':'Read aloud') + '</span></div>' +
+      '<div class="revise-box">' + esc(rv.revised) + '</div>' +
+      '<p class="hint-line" style="margin-top:8px">' + esc(zh?'读顺句子、记住搭配。读两遍也没关系。':'Read it through; getting the phrasing into your mouth is the point.') + '</p>' +
+    '</div>';
+  }
+  if(d.stage === 2){
+    return '<div class="card">' +
+      '<div class="card-head"><h2>' + esc(zh?'第 2 段 · 只看关键词':'Stage 2 · Keywords only') + '</h2>' +
+      '<span class="right pill accent">' + esc(zh?'自己组句':'Rebuild') + '</span></div>' +
+      '<div class="kw-cloud">' + ((rv.keywords || []).map(k=>'<span class="kw">' + esc(k) + '</span>').join('') || '<span class="tiny muted">—</span>') + '</div>' +
+      '<p class="hint-line" style="margin-top:10px">' + esc(zh?'只看这些词把内容讲出来，忘了可以去想结构（开头—论点—例子—收尾）。':'Use these words to rebuild it; you may recall the structure, not the sentences.') + '</p>' +
+    '</div>';
+  }
+  return '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'第 3 段 · 空白复述':'Stage 3 · Blank recall') + '</h2>' +
+    '<span class="right pill warm">' + esc(zh?'无提示':'No hints') + '</span></div>' +
+    '<div class="blind-box">' + esc(zh?'这一遍什么都没有。用你自己的话说出同一段内容——这才是真正记住的部分。':'Nothing shown. Say the same content in your own words.') + '</div>' +
+  '</div>';
+}
+
+function viewDrill(){
+  const zh = app.lang === 'zh';
+  const d = app.drill;
+  if(!d) return '<div class="card empty">' + esc(zh?'没有进行中的练习':'No drill in progress') + '</div>';
+  const rec = drillRecord();
+  if(!rec || !rec.revised || !rec.revised.revised){
+    return '<div class="card"><div class="blind-box">' +
+      esc(zh?'这场没有改进版，先回复盘页生成一个。':'No revision yet — generate one on the review page.') +
+      '</div><div class="row" style="margin-top:12px"><button class="btn" id="drillBack">' + esc(zh?'回复盘':'Back') + '</button></div></div>';
+  }
+
+  const stepper = DRILL_STAGES.map(x=>{
+    const cls = d.done ? 'done' : (x.k === d.stage ? 'on' : (x.k < d.stage ? 'done' : ''));
+    return '<span class="stage-dot ' + cls + '"><span class="n">' + x.k + '</span>' + esc(zh ? x.zh : x.en) + '</span>';
+  }).join('');
+
+  if(d.done){
+    const attempts = (rec.drill && rec.drill.attempts) || [];
+    const last = attempts.slice(-3);
+    const rows = last.map(a=>{
+      const st = DRILL_STAGES[a.stage - 1] || {};
+      return '<div class="attempt-row">' +
+        '<div class="k">' + esc(zh ? st.zh : st.en) + '</div>' +
+        '<div class="v">' + a.wc + ' ' + esc(zh ? '字' : 'chars') + ' · ' + esc(fmtDuration(a.sec)) + '</div>' +
+      '</div>';
+    }).join('');
+    return '<div class="card">' +
+      '<div class="card-head"><h2>' + esc(zh?'这一轮完成':'Round complete') + '</h2>' +
+      '<span class="right pill mono">' + esc(zh?'第 ':'Round ') + d.round + '</span></div>' +
+      '<div class="small muted" style="line-height:1.6">' + esc(rec.topic) + '</div>' +
+      '<div class="stage-bar">' + stepper + '</div>' +
+      '<div class="mini-table" style="margin-top:14px">' + rows + '</div>' +
+      '<p class="hint-line" style="margin-top:10px">' + esc(zh?'字数掉下来、时长变短通常是变熟了；反而变长往往是又改回自己的旧句型。':'Shorter and faster usually means it stuck.') + '</p>' +
+    '</div>' +
+    '<div class="card flat"><div class="row" style="justify-content:space-between">' +
+      '<button class="btn ghost" id="drillBack">' + esc(zh?'回复盘':'Back to review') + '</button>' +
+      '<div class="row">' +
+        '<button class="btn" id="drillRestartTopic">' + esc(zh?'重新录制本题':'Re-record topic') + '</button>' +
+        '<button class="btn primary" id="drillAgain">' + esc(zh?'再来一轮':'Another round') + ' →</button>' +
+      '</div>' +
+    '</div></div>';
+  }
+
+  return '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'三阶段复述':'3-stage retell') + '</h2>' +
+      '<span class="right pill mono">' + esc(zh?'第 ':'Round ') + d.round + '</span></div>' +
+    '<div class="small muted" style="line-height:1.6">' + esc(rec.topic) + '</div>' +
+    '<div class="stage-bar">' + stepper + '</div>' +
+  '</div>' +
+  drillMaterial(null, zh) +
+  '<div class="card flat"><div class="row" style="justify-content:space-between">' +
+    '<button class="btn ghost" id="drillBack">' + esc(zh?'回复盘':'Back to review') + '</button>' +
+    '<div class="row">' +
+      (d.stage > 1 ? '<button class="btn ghost" id="drillPrev">' + esc(zh?'上一段':'Previous') + '</button>' : '') +
+      '<button class="btn primary" id="drillStart">' + esc(zh?'开始这一段':'Start this stage') + ' →</button>' +
+    '</div>' +
+  '</div></div>';
+}
+
+function bindDrill(){
+  const d = app.drill;
+  if(!d) return;
+  const rec = drillRecord();
+  const back = document.getElementById('drillBack');
+  if(back) back.onclick = ()=>{
+    if(rec){ app.session = rec; setView('result', {record: rec}); }
+    else setView('home');
+  };
+  const start = document.getElementById('drillStart');
+  if(start) start.onclick = ()=> beginDrillStage();
+  const prev = document.getElementById('drillPrev');
+  if(prev) prev.onclick = ()=>{ if(d.stage > 1){ d.stage--; render(); } };
+  const again = document.getElementById('drillAgain');
+  if(again) again.onclick = ()=>{ d.round++; d.stage = 1; d.done = false; render(); };
+  const rt = document.getElementById('drillRestartTopic');
+  if(rt && rec) rt.onclick = ()=> repractice(rec);
+}
+
+function beginDrillStage(){
+  const d = app.drill;
+  const rec = drillRecord();
+  if(!d || !rec) return;
+  app.lang = rec.language;
+  app.mode = rec.mode;
+  app.inputType = rec.inputType;
+  app.level = rec.level;
+  app.current = { zh: rec.topic, en: rec.topicAlt || rec.topic, cat: rec.category, concept: rec.isConcept, dom: rec.category };
+  app.session = {
+    id: uid(),
+    createdAt: new Date().toISOString(),
+    language: rec.language,
+    mode: rec.mode,
+    topic: rec.topic,
+    topicAlt: rec.topicAlt,
+    category: rec.category,
+    isConcept: rec.isConcept,
+    isCustomTopic: rec.isCustomTopic,
+    inputType: rec.inputType,
+    level: rec.level,
+    timing:{ prepareSec: 0, searchSec: 0, answerSec: 0, totalSec: 0 },
+    content:{ text:'', wordCount: 0 },
+    review: null,
+    scored: true,
+    aiMeta:{ model:'', scoredAt:'', source:'drill' },
+    recall:{ used: 0, allowed: 0 },
+    limit: 0,
+    drill:{ stage: d.stage, round: d.round, sourceId: rec.id },
+    _startAt: Date.now()
+  };
+  setView('answer');
+}
+
+function finishDrillStage(auto){
+  const s = app.session;
+  const d = app.drill;
+  if(!s || !s.drill || !d) return;
+  const zh = app.lang === 'zh';
+  const ta = document.getElementById('answerText');
+  if(ta) s.content.text = ta.value;
+  const text = (s.content.text || '').trim();
+  if(!text){
+    if(!auto) toast(zh ? '先说或写一点内容' : 'Add something first');
+    return;
+  }
+  submitted = true;
+  stopVoice(true);
+  clearTick();
+  const sec = Math.round(answerElapsed || ((Date.now() - (s._startAt || Date.now())) / 1000));
+  const rec = drillRecord();
+  if(rec){
+    rec.drill = rec.drill || { attempts: [] };
+    rec.drill.attempts = (rec.drill.attempts || []).concat([{
+      stage: s.drill.stage, round: d.round, text,
+      sec, wc: countWords(text, s.language), at: new Date().toISOString()
+    }]);
+    const idx = sessions.findIndex(x=> x.id === rec.id);
+    if(idx >= 0) sessions[idx] = rec;
+    saveSessions();
+  }
+  if(d.stage < 3){
+    d.stage++;
+    toast(zh ? ('完成第 ' + (d.stage - 1) + ' 段，进入第 ' + d.stage + ' 段') : 'Stage done');
+    setView('drill');
+  } else {
+    d.done = true;
+    toast(zh ? '三段走完，看看对比' : 'All three stages done');
+    setView('drill');
+  }
 }
 
 /* ============================================================
@@ -2822,6 +3266,7 @@ function viewSettings(){
       '<input id="aiModel" placeholder="gpt-4o-mini / qwen-plus / deepseek-chat" value="' + esc(ai.model || '') + '"></div>' +
     '<div class="row" style="justify-content:space-between;margin-top:6px">' +
       '<button class="btn ghost" id="testAI">' + esc(zh?'测试连接':'Test connection') + '</button>' +
+      '<button class="btn ghost" id="probeModel">' + esc(zh?'不知道模型名？自动挑':'Pick a working model') + '</button>' +
       '<button class="btn primary" id="saveAI">' + esc(zh?'保存配置':'Save') + '</button>' +
     '</div>' +
     '<p class="hint-line" style="margin-top:10px">' + esc(zh?'未配置或调用失败时，本场会自动降级为本地规则估算，记录仍会保存。':'If unset or failing, the session falls back to local rule estimates and is still saved.') + '</p>' +
@@ -2868,6 +3313,18 @@ function viewSettings(){
 /* ============================================================
    配置指南
    ============================================================ */
+/* 方舟公开的对话模型候选：404 时用它自动挑一个能用的 */
+const MODEL_CANDIDATES = [
+  'doubao-seed-2-1-pro-260915',
+  'doubao-seed-2-1-lite-260915',
+  'doubao-seed-evolving',
+  'doubao-seed-2-1-turbo-260628',
+  'doubao-seed-2-0-mini-260428',
+  'doubao-seed-2-0-pro-260215',
+  'deepseek-v4-1-flash-261017',
+  'glm-5-3-flash-260828'
+];
+
 const AI_PRESETS = [
   {name:'火山方舟 · 豆包', url:'https://ark.cn-beijing.volces.com/api/v3', model:'doubao-seed-2-1-pro-260915', tag:'方舟',
    note:'地址固定填 /api/v3（不是 /v1）。Model 填方舟控制台「模型列表」里的 Model ID，例如 doubao-seed-2-1-pro-260915；也可填推理接入点 ID（ep- 开头）。方舟不允许浏览器直连，请配本地代理（见下方 A 方案）。'},
@@ -3090,6 +3547,41 @@ function bindSettings(){
       settings.ai.endpoint = prev;
     }
   };
+  const probe = document.getElementById('probeModel');
+  if(probe) probe.onclick = async ()=>{
+    const ep = document.getElementById('aiEndpoint').value.trim();
+    const key = document.getElementById('aiKey').value.trim();
+    const prevEp = settings.ai.endpoint;
+    if(!ep){ toast(zh?'先填 Endpoint':'Fill endpoint first'); return; }
+    const url = endpointToUrl(ep);
+    settings.ai.endpoint = ep;
+    probe.disabled = true;
+    try{
+      for(let i = 0; i < MODEL_CANDIDATES.length; i++){
+        const m = MODEL_CANDIDATES[i];
+        toast((zh?'试第 ':'Try ') + (i+1) + '/ ' + MODEL_CANDIDATES.length + ' · ' + m);
+        let res;
+        try{
+          res = await fetch(url, {
+            method:'POST',
+            headers: Object.assign({'Content-Type':'application/json'}, key?{'Authorization':'Bearer '+key}:{}),
+            body: JSON.stringify({ model:m, temperature:0, max_tokens:8, messages:[{role:'user',content:'hi'}] })
+          });
+        }catch(e){ toast(fetchFailHint()); return; }
+        if(res.status === 401){ toast(zh?'Key 不对（401）：先检查密钥有没有粘全':'Bad key (401)'); return; }
+        if(res.status === 429){ toast(zh?'额度用尽（429）':'Quota (429)'); return; }
+        if(res.ok){
+          document.getElementById('aiModel').value = m;
+          toast(zh ? ('能用：' + m + '，已填好，点「保存配置」') : ('Works: ' + m + ' — hit Save'));
+          return;
+        }
+      }
+      toast(zh?'这些模型都没开通（全部 404）。去方舟控制台「开通管理」勾一个模型，或把你的 ep- 接入点 ID 填进 Model':'None of them are enabled (all 404)');
+    } finally {
+      probe.disabled = false;
+      settings.ai.endpoint = prevEp;
+    }
+  };
   const map = {defLang:'defaultLanguage', defMode:'defaultMode', defInput:'defaultInputType', defLevel:'defaultLevel'};
   Object.keys(map).forEach(id=>{
     const el = document.getElementById(id);
@@ -3144,7 +3636,7 @@ function bindSettings(){
 function bindView(name){
   const fn = ({
     home:bindHome, topic:bindTopic, prep:bindPrep, search:bindSearch,
-    answer:bindAnswer, result:bindResult, history:bindHistory,
+    answer:bindAnswer, result:bindResult, drill:bindDrill, history:bindHistory,
     errors:bindErrors, settings:bindSettings, guide:bindGuide
   })[name];
   if(fn) fn();
