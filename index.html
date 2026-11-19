@@ -2039,6 +2039,77 @@ function fallbackKeywords(text){
   return out;
 }
 
+/* ---------- 英语阶梯：给「下一档」的示范答案 ---------- */
+function nextBand(band){
+  const b = Number(band) || 0;
+  if(b >= 9) return 9;
+  const t = Math.min(9, Math.floor(b) + 1);
+  return t <= b ? Math.min(9, Math.round(b * 2) / 2 + 0.5) : t;
+}
+
+async function callBandUp(s, target){
+  const ai = settings.ai;
+  const url = aiEndpoint();
+  if(!url || !ai.model) throw new Error('AI not configured');
+  const from = (s.review && s.review.overall) || 0;
+  const sys = [
+    '你是 IELTS 考官兼口语/写作教练。',
+    '学员用英语回答了同一道题：「' + s.topic + '」，这次得分 ' + from.toFixed(1) + '（满分 9）。',
+    '任务：给出这题的「' + target.toFixed(1) + ' 分版本」示范，让他照着练。',
+    '硬性要求：',
+    '1) 沿用他原本的观点、立场与结构骨架，不换话题、不加无关论点。',
+    '2) 把它提升到 ' + target.toFixed(1) + ' 档该有的水平：词汇更准确多样（含自然搭配与地道表达）、衔接更自然（连接词与指代）、句式有可控的复杂度（从句/条件/让步/对比）、语法错误清零、例子和理由更具体。',
+    '3) 长度约为原文的 1.0–1.25 倍。',
+    '4) 必须是一个学习者能开口讲出来的答案，不要写成范文腔的长篇书面文。',
+    '5) 全文用英文。',
+    '只输出一个 JSON 对象，不要 Markdown、代码块或解释。',
+    'JSON 结构：{"targetBand":number,"answer":string,"upgrades":[{"dimension":"词汇|衔接|句式|语法|论证","from":string,"to":string,"why":string}],"checklist":[string],"keywords":[string]}',
+    'upgrades 取 3–6 条最关键的提升（from/to 为原文与升档后的逐字片段）；checklist 3–5 条「下次回答必须做到的动作」；keywords 6–10 个复述提示词。',
+  ].join('\n');
+  const ctrl = new AbortController();
+  const to = setTimeout(()=> ctrl.abort(), 60000);
+  let res;
+  try{
+    res = await fetch(url, {
+      method:'POST',
+      headers: Object.assign({'Content-Type':'application/json'}, ai.apiKey ? {'Authorization':'Bearer ' + ai.apiKey} : {}),
+      body: JSON.stringify({
+        model: ai.model,
+        temperature: 0.3,
+        messages:[{role:'system', content:sys},{role:'user', content:JSON.stringify({
+          topic: s.topic, original: s.content.text, band: from,
+          dimensions: (s.review && s.review.dimensions) || [],
+          weaknesses: (s.review && s.review.improvements) || []
+        })}]
+      }),
+      signal: ctrl.signal
+    });
+  }catch(e){
+    if(e && e.name === 'AbortError') throw new Error('请求超时（60 秒）');
+    throw new Error(fetchFailHint());
+  }finally { clearTimeout(to); }
+  if(!res.ok){
+    const txt = await res.text().catch(()=> '');
+    throw new Error(explainAIError(res.status, txt) || ('HTTP ' + res.status + ' ' + txt.slice(0, 140)));
+  }
+  const data = await res.json();
+  const raw = (data.choices && data.choices[0] && (data.choices[0].message ? data.choices[0].message.content : data.choices[0].text)) || '';
+  const parsed = extractJSON(raw);
+  if(!parsed || !parsed.answer) throw new Error('阶梯答案返回无法解析');
+  const upgrades = (Array.isArray(parsed.upgrades) ? parsed.upgrades : []).filter(x=> x && (x.to || x.from)).slice(0, 6);
+  let keywords = (Array.isArray(parsed.keywords) ? parsed.keywords : []).map(k=> String(k).trim()).filter(Boolean);
+  if(keywords.length < 3) keywords = fallbackKeywords(parsed.answer);
+  return {
+    from: from,
+    to: Number(parsed.targetBand) || target,
+    answer: String(parsed.answer).trim(),
+    upgrades,
+    checklist: (Array.isArray(parsed.checklist) ? parsed.checklist : []).map(x=> String(x).trim()).filter(Boolean).slice(0, 5),
+    keywords: keywords.slice(0, 12),
+    at: new Date().toISOString()
+  };
+}
+
 function extractJSON(raw){
   if(!raw) return null;
   if(typeof raw === 'object') return raw;
@@ -2315,10 +2386,20 @@ async function scoreSession(s){
   s.review = review;
   s.scored = true;
   if(source === 'ai'){
-    try{
-      s.revised = await callRevise(s);
-    }catch(e){
-      s.revised = { error: (e && e.message ? e.message : '改进版生成失败').slice(0, 160) };
+    if(s.language === 'en'){
+      try{
+        const target = nextBand(review.overall);
+        s.ladder = await callBandUp(s, target);
+        s.revised = { revised: s.ladder.answer, changes: (s.ladder.upgrades || []).map(u=>({ type: u.dimension, original: u.from, fixed: u.to, why: u.why })), keywords: s.ladder.keywords };
+      }catch(e){
+        s.revised = { error: (e && e.message ? e.message : '阶梯答案生成失败').slice(0, 160) };
+      }
+    } else {
+      try{
+        s.revised = await callRevise(s);
+      }catch(e){
+        s.revised = { error: (e && e.message ? e.message : '改进版生成失败').slice(0, 160) };
+      }
     }
   }
   s.aiMeta = {
@@ -2424,6 +2505,52 @@ function reviseCard(s, zh){
     '</div></div>';
 }
 
+function enLadderCard(s, zh){
+  const lad = s.ladder;
+  if(!lad || !lad.answer) return reviseCard(s, zh);
+  const from = Number(lad.from) || 0;
+  const to = Number(lad.to) || nextBand(from);
+  const nxt = Math.min(9, to + 1);
+  const capped = from >= 9;
+  const pill = (cls, tag, text)=> '<span class="stage-dot ' + cls + '"><span class="n">' + tag + '</span>' + esc(text) + '</span>';
+
+  return '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'阶梯训练 · 同一题往上爬':'Band ladder · same prompt') + '</h2>' +
+      '<span class="right pill accent">' + esc(zh?'IELTS 9 分制':'IELTS 9-band') + '</span></div>' +
+    '<div class="stage-bar">' +
+      pill('done', 'A', (zh?'这次得分 ':'You scored ') + from.toFixed(1)) +
+      pill('on', 'B', capped ? (zh?'已在 9 分档':'At band 9') : (zh?'照练 ' + to.toFixed(1) + ' 分版':'Practise a ' + to.toFixed(1)) ) +
+      (capped ? '' : pill('', 'C', zh?'之后 ' + nxt.toFixed(1) : 'then ' + nxt.toFixed(1)) ) +
+    '</div>' +
+    '<p class="hint-line" style="margin-top:10px">' + esc(zh
+      ? '同一个问题反复练：照这版说到顺，再录一遍；新得分够到 ' + to.toFixed(1) + ' 就会自动给你 ' + nxt.toFixed(1) + ' 的版本。'
+      : 'Repeat the same prompt: practise this version until fluent, record again; once you hit ' + to.toFixed(1) + ' you get the ' + nxt.toFixed(1) + ' version.') + '</p>' +
+    '<div class="revise-box" style="margin-top:10px">' + esc(lad.answer) + '</div>' +
+    ((lad.upgrades && lad.upgrades.length)
+      ? '<div style="margin-top:14px"><div class="small" style="font-weight:650;margin-bottom:8px">' + esc(zh?'升档做了什么':'What raised the band') + '</div>' +
+          lad.upgrades.map(u=>'<div class="diff-row">' +
+            '<div class="t"><span class="pill warm">' + esc(u.dimension || 'upgrade') + '</span>' +
+              (u.from ? '<span class="from">' + esc(u.from) + '</span><span>→</span>' : '') +
+              '<span class="to">' + esc(u.to || '') + '</span></div>' +
+            (u.why ? '<div class="why">' + esc(u.why) + '</div>' : '') +
+          '</div>').join('') + '</div>'
+      : '') +
+    ((lad.checklist && lad.checklist.length)
+      ? '<div style="margin-top:12px"><div class="small" style="font-weight:650;margin-bottom:8px">' + esc(zh?'这遍必须做到':'Must do this round') + '</div>' +
+          '<div class="list-block">' + lad.checklist.map((c,i)=>'<div class="list-item"><span class="b good">' + (i+1) + '</span><span>' + esc(c) + '</span></div>').join('') + '</div></div>'
+      : '') +
+    ((lad.keywords && lad.keywords.length)
+      ? '<div style="margin-top:12px"><div class="small" style="font-weight:650;margin-bottom:8px">' + esc(zh?'复述关键词':'Keywords') + '</div>' +
+          '<div class="kw-cloud">' + lad.keywords.map(k=>'<span class="kw">' + esc(k) + '</span>').join('') + '</div></div>'
+      : '') +
+    '<div class="divider"></div>' +
+    '<div class="row" style="justify-content:space-between">' +
+      '<button class="btn primary" id="startDrill">' + esc(zh?'三阶段练这一段':'3-stage drill on this') + ' →</button>' +
+      '<button class="btn" id="repractice">' + esc(zh?'再录一遍 · 冲 ':'Re-record · aim ') + (capped ? '9.0' : to.toFixed(1)) + '</button>' +
+    '</div>' +
+  '</div>';
+}
+
 function viewResult(){
   const zh = app.lang === 'zh';
   const s = currentRecord();
@@ -2513,7 +2640,7 @@ function viewResult(){
     '<p class="small" style="white-space:pre-wrap;line-height:1.75;color:var(--ink-2)">' + esc(s.content.text) + '</p>' +
   '</div>' +
 
-  reviseCard(s, zh) +
+  (s.language === 'en' && s.ladder ? enLadderCard(s, zh) : reviseCard(s, zh)) +
 
   '<div class="card flat">' +
     '<div class="row" style="justify-content:space-between">' +
@@ -2803,7 +2930,13 @@ function bindResult(){
     mr.disabled = true;
     toast(zh ? '正在生成改进版…' : 'Generating revision…');
     try{
-      s.revised = await callRevise(s);
+      if(s.language === 'en'){
+        const target = nextBand((s.review && s.review.overall) || 0);
+        s.ladder = await callBandUp(s, target);
+        s.revised = { revised: s.ladder.answer, changes: (s.ladder.upgrades || []).map(u=>({ type: u.dimension, original: u.from, fixed: u.to, why: u.why })), keywords: s.ladder.keywords };
+      } else {
+        s.revised = await callRevise(s);
+      }
       const i = sessions.findIndex(x=> x.id === s.id);
       if(i >= 0) sessions[i] = s;
       saveSessions();
