@@ -344,6 +344,256 @@ textarea.outline{min-height:120px;font-size:14px}
   .score-hero{gap:16px}
   .btn{padding:10px 15px}
 }
+
+/* ============================================================
+   果冻可爱质感 · Jelly Candy Theme（覆盖层）
+   ============================================================ */
+:root{
+  --bg:#fff7f4;
+  --ink:#3b2f42;
+  --ink-2:#5b4a63;
+  --muted:#9b8aa4;
+  --line:rgba(96,56,86,.12);
+  --accent:#ff9db4;
+  --accent-deep:#d95f80;
+  --accent-soft:#ffe8ef;
+  --warm:#ffce9f;
+  --warm-soft:#fff3e6;
+  --green:#8fd8c2;
+  --green-soft:#e4f9f2;
+  --danger:#ef7d8c;
+  --shadow:0 26px 48px -30px rgba(196,110,148,.62), 0 6px 18px -12px rgba(120,80,140,.22);
+  --shadow-sm:0 10px 22px -14px rgba(180,110,150,.55);
+  --r:30px;
+}
+body{
+  color:var(--ink);
+  background:
+    radial-gradient(960px 640px at 4% -8%, #ffe1ea 0%, rgba(255,225,234,0) 62%),
+    radial-gradient(820px 600px at 96% 2%, #e3efff 0%, rgba(227,239,255,0) 64%),
+    radial-gradient(760px 640px at 46% 108%, #e6fff6 0%, rgba(230,255,246,0) 62%),
+    radial-gradient(620px 560px at 84% 58%, #f4ecff 0%, rgba(244,236,255,0) 62%),
+    var(--bg);
+  background-attachment:fixed;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(rgba(255,255,255,.85) 1.6px, transparent 2px);
+  background-size:42px 42px;
+  opacity:.5;
+  animation:drift 40s linear infinite;
+}
+@keyframes drift{from{background-position:0 0}to{background-position:42px 84px}}
+.shell{position:relative;z-index:1}
+
+/* 侧边栏 */
+.side{
+  border-radius:32px;border:2px solid rgba(255,255,255,.95);
+  background:
+    radial-gradient(120% 70% at 20% -10%, rgba(255,255,255,.92), rgba(255,255,255,0) 58%),
+    linear-gradient(165deg, rgba(255,246,250,.86), rgba(255,255,255,.6));
+  box-shadow:0 26px 50px -32px rgba(200,120,155,.6), inset 0 2px 0 #fff;
+}
+.brand-mark{
+  border-radius:16px;color:#fff;
+  background:linear-gradient(160deg,#ffb3c6,#ff86a6 60%,#f47192);
+  box-shadow:0 12px 20px -12px rgba(244,113,146,.85), inset 0 3px 0 rgba(255,255,255,.6), inset 0 -8px 12px -8px rgba(190,50,90,.4);
+}
+.nav-item{border-radius:16px;color:var(--ink-2)}
+.nav-item:hover{background:rgba(255,255,255,.72);transform:translateX(2px)}
+.nav-item.on{
+  color:#a83f60;
+  background:linear-gradient(180deg,#ffffff,#ffe9f0);
+  box-shadow:0 10px 18px -14px rgba(240,130,160,.85), inset 0 2px 0 #fff, inset 0 -6px 10px -8px rgba(255,180,200,.6);
+}
+.lang-switch{border-radius:16px;border:2px solid rgba(255,255,255,.9);background:rgba(255,255,255,.78)}
+.lang-switch button{border-radius:12px;color:var(--muted)}
+.lang-switch button.on{
+  color:#b8466a;
+  background:linear-gradient(180deg,#fff,#ffe9f0);
+  box-shadow:0 6px 14px -10px rgba(240,130,160,.9), inset 0 2px 0 #fff;
+}
+.privacy{color:var(--muted)}
+
+/* 卡片：果冻肤色 + 顶部高光 */
+.card{
+  position:relative;
+  border-radius:30px;
+  border:2px solid rgba(255,255,255,.96);
+  background:
+    radial-gradient(130% 76% at 16% -14%, rgba(255,255,255,.96), rgba(255,255,255,0) 58%),
+    linear-gradient(158deg, rgba(255,252,253,.9), rgba(255,255,255,.62));
+  box-shadow:
+    0 28px 52px -34px rgba(198,115,150,.62),
+    0 6px 16px -12px rgba(140,95,150,.22),
+    inset 0 3px 0 rgba(255,255,255,.95),
+    inset 0 -18px 30px -26px rgba(255,170,196,.55);
+  backdrop-filter:blur(22px) saturate(1.25);
+  -webkit-backdrop-filter:blur(22px) saturate(1.25);
+}
+.card.flat{background:
+  radial-gradient(130% 76% at 18% -14%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%),
+  linear-gradient(160deg, rgba(255,251,252,.82), rgba(250,250,255,.58));
+  box-shadow:0 16px 32px -26px rgba(190,120,155,.5), inset 0 2px 0 #fff;
+}
+.hero::after{
+  background:radial-gradient(circle at 34% 32%, rgba(255,169,196,.4), rgba(255,169,196,0) 66%);
+  width:330px;height:330px;
+}
+.hero h2{color:#3b2f42}
+
+/* 按钮：胶囊果冻 */
+.btn{
+  border-radius:999px;
+  padding:11px 20px;
+  color:#7d566a;
+  font-weight:650;
+  border:2px solid rgba(255,255,255,.95);
+  background:linear-gradient(180deg,#ffffff,#fff0f5);
+  box-shadow:0 12px 20px -14px rgba(186,110,145,.75), inset 0 2px 0 #fff, inset 0 -8px 12px -9px rgba(255,170,195,.65);
+  transition:transform .16s cubic-bezier(.34,1.6,.64,1),box-shadow .2s,background .2s;
+}
+.btn:hover{transform:translateY(-1.5px);box-shadow:0 16px 26px -14px rgba(186,110,145,.8), inset 0 2px 0 #fff}
+.btn:active{transform:scale(.94)}
+.btn.primary{
+  color:#fff;
+  border-color:#ffd0dc;
+  background:linear-gradient(180deg,#ffbacb 0%,#ff91aa 52%,#fb7c98 100%);
+  box-shadow:
+    0 16px 26px -12px rgba(251,124,152,.8),
+    inset 0 3px 0 rgba(255,255,255,.7),
+    inset 0 -10px 16px -10px rgba(196,52,92,.45);
+  text-shadow:0 1px 0 rgba(190,70,100,.35);
+}
+.btn.primary:hover{background:linear-gradient(180deg,#ffc4d3,#ff82a0 55%,#f96f8e)}
+.btn.ghost{background:rgba(255,255,255,.6);border-color:rgba(255,255,255,.9);box-shadow:0 8px 16px -14px rgba(186,110,145,.7), inset 0 2px 0 #fff}
+.btn.warm{color:#a06235;background:linear-gradient(180deg,#fff,#fff3e4);border-color:#ffe2c4}
+.btn.danger{color:#a8465a;background:linear-gradient(180deg,#fff,#ffeef1);border-color:#ffd2dc}
+.btn.sm{padding:8px 14px;font-size:12.5px;border-radius:999px}
+
+/* 标签与筹码 */
+.pill{border-radius:999px;border:2px solid rgba(255,255,255,.92);background:rgba(255,255,255,.8);
+  box-shadow:0 6px 14px -12px rgba(180,110,150,.65), inset 0 2px 0 #fff;color:#6d5566}
+.pill.accent{background:linear-gradient(180deg,#fff,#ffe6ee);border-color:#ffd2de;color:#c04c70}
+.pill.warm{background:linear-gradient(180deg,#fff,#fff2e4);border-color:#ffe3c6;color:#b06a36}
+.pill.green{background:linear-gradient(180deg,#fff,#e8fbf4);border-color:#c9f0e2;color:#3f7c69}
+.chip{
+  border-radius:999px;
+  padding:9px 16px;
+  border:2px solid rgba(255,255,255,.94);
+  background:rgba(255,255,255,.82);
+  box-shadow:0 8px 16px -14px rgba(180,120,150,.7), inset 0 2px 0 #fff;
+  transition:transform .15s cubic-bezier(.34,1.6,.64,1),background .18s,box-shadow .18s;
+}
+.chip:hover{transform:translateY(-2px);border-color:#ffd9e4}
+.chip:active{transform:scale(.95)}
+.chip.on{
+  color:#c04c70;
+  background:linear-gradient(180deg,#ffffff,#ffe9f1);
+  border-color:#ffc3d5;
+  box-shadow:0 12px 20px -14px rgba(255,138,170,.95), inset 0 3px 0 #fff, inset 0 -8px 12px -10px rgba(255,170,196,.8);
+}
+
+/* 题目与输入 */
+.topic-peek{
+  border-radius:24px;border:2px solid rgba(255,255,255,.96);
+  background:
+    radial-gradient(120% 80% at 12% -10%, rgba(255,255,255,.95), rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, rgba(255,247,251,.95), rgba(247,249,255,.75));
+  box-shadow:inset 0 2px 0 #fff, 0 14px 26px -22px rgba(180,110,150,.65);
+}
+.topic-pin{
+  border-radius:24px;border:2px solid rgba(255,255,255,.96);
+  background:
+    radial-gradient(120% 80% at 10% -12%, rgba(255,255,255,.96), rgba(255,255,255,0) 58%),
+    linear-gradient(160deg, rgba(255,248,252,.96), rgba(238,246,255,.72));
+  box-shadow:0 20px 34px -28px rgba(186,115,152,.7), inset 0 2px 0 #fff;
+}
+textarea.answer{
+  border-radius:22px;border:2px solid #ffe1ea;
+  background:linear-gradient(180deg,#ffffff,#fffbfc);
+  box-shadow:inset 0 3px 10px -6px rgba(190,130,160,.28);
+  line-height:1.8;
+}
+textarea.answer:focus{border-color:#ffb8cc;box-shadow:0 0 0 5px rgba(255,164,190,.22), inset 0 3px 10px -6px rgba(190,130,160,.2)}
+.field input,.field select{
+  border-radius:14px;border:2px solid rgba(255,255,255,.95);
+  background:linear-gradient(180deg,#fff,#fff9fb);
+  box-shadow:inset 0 2px 6px -4px rgba(190,130,160,.3);
+}
+.field input:focus,.field select:focus{border-color:#ffc0d2;box-shadow:0 0 0 5px rgba(255,164,190,.2)}
+
+/* 计时器与进度 */
+.timer{color:#ef7f9e;letter-spacing:.01em}
+.timer.warn{color:var(--danger)}
+.progress{height:9px;border-radius:999px;background:rgba(255,255,255,.75);box-shadow:inset 0 2px 5px -3px rgba(170,120,145,.45);padding:2px}
+.progress i{
+  border-radius:999px;
+  background:linear-gradient(90deg,#ffd0dd,#ff9db4 45%,#cbb2f2);
+  box-shadow:0 2px 6px -2px rgba(255,150,180,.8), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.progress.warn i{background:linear-gradient(90deg,#ffd0c9,#ef7d8c)}
+.timer-label{color:#b094a6;letter-spacing:.18em}
+
+/* 语音 */
+.mic{
+  background:radial-gradient(120% 90% at 30% -10%, #ffffff, #fff0f5 60%, #ffe3ec);
+  border:2px solid #fff;
+  box-shadow:0 18px 30px -18px rgba(246,128,160,.85), inset 0 4px 0 #fff, inset 0 -12px 18px -12px rgba(255,168,192,.7);
+  color:#c9678a;
+}
+.mic.on{
+  color:#fff;
+  background:linear-gradient(160deg,#ffb3c6,#ff86a6 55%,#f46e90);
+  box-shadow:0 0 0 8px rgba(255,150,180,.18), 0 20px 32px -16px rgba(244,110,144,.9), inset 0 4px 0 rgba(255,255,255,.5);
+}
+.wave i{background:#ff92ac}
+
+/* 概念卡 */
+.concept-card{
+  border-radius:30px;border:2px solid rgba(255,255,255,.96);
+  background:
+    radial-gradient(120% 80% at 22% -14%, rgba(255,255,255,.96), rgba(255,255,255,0) 56%),
+    linear-gradient(165deg,#fff1f7,#eef3ff 55%,#e9fbf5);
+  box-shadow:0 30px 54px -36px rgba(190,120,165,.75), inset 0 3px 0 #fff;
+}
+.concept-card .k{color:#43324c}
+.concept-card .e{color:#c45377}
+
+/* 结果页 */
+.score-big{color:#3b2f42}
+.band{background:linear-gradient(180deg,#fff,#ffe6ee);color:#c04c70;font-weight:700;border:2px solid #ffd6e1;border-radius:999px;padding:6px 14px}
+.dim-bar{height:8px;border-radius:999px;background:rgba(255,255,255,.82);box-shadow:inset 0 2px 5px -3px rgba(170,120,145,.4);padding:2px}
+.dim-bar i{border-radius:999px;background:linear-gradient(90deg,#ffd4e0,#ff9db4 55%,#c3b0f0);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.dim-row{border-bottom:1px dashed rgba(190,140,170,.22)}
+.list-item .b.bad{background:linear-gradient(180deg,#fff,#ffe9ef);color:#c04c70}
+.err-item{border-radius:20px;border:2px solid rgba(255,255,255,.94);background:linear-gradient(160deg,#fffdfe,#fff8fb);box-shadow:0 12px 22px -20px rgba(180,110,150,.6)}
+.err-item .ex{border-left:3px solid #ffb9cc;color:#5b4a63}
+.list-row{border-radius:20px;border:2px solid rgba(255,255,255,.94);background:linear-gradient(160deg,rgba(255,255,255,.86),rgba(255,248,251,.66));box-shadow:0 12px 24px -22px rgba(180,110,150,.6);transition:transform .16s cubic-bezier(.34,1.6,.64,1),box-shadow .18s,background .18s}
+.list-row:hover{transform:translateY(-2px);background:#fff;box-shadow:0 20px 30px -24px rgba(186,110,145,.75)}
+.list-row .score{color:#d95f80}
+.stat{border-radius:22px;border:2px solid rgba(255,255,255,.94);background:linear-gradient(165deg,rgba(255,255,255,.9),rgba(255,247,251,.7));box-shadow:0 14px 26px -24px rgba(180,110,150,.65), inset 0 2px 0 #fff}
+.stat .v{color:#4a3852}
+.cat-bar .bar{height:7px;border-radius:999px;background:rgba(255,255,255,.8);padding:2px;box-shadow:inset 0 2px 4px -3px rgba(170,120,145,.4)}
+.cat-bar .bar i{background:linear-gradient(90deg,#ffd3c2,#ffa48f 55%,#ff8fae);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+
+/* 其它 */
+.empty{color:var(--muted)}
+.modal-body{border-radius:26px;border:2px solid #fff;box-shadow:0 50px 90px -40px rgba(80,40,70,.6)}
+.toast{background:linear-gradient(160deg,#4b3a50,#6c5064);border-radius:999px;padding:12px 22px;box-shadow:0 20px 40px -20px rgba(70,40,60,.8);border:1px solid rgba(255,255,255,.25)}
+.back{border-radius:14px;border:2px solid #fff;background:linear-gradient(180deg,#fff,#fff5f8);box-shadow:0 10px 18px -14px rgba(186,110,145,.8)}
+.spinner{border-color:rgba(255,164,190,.35);border-top-color:#ff8fa8}
+::selection{background:#ffe0ea}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#ffc9d8,#ffa9c1);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+
+/* 小动效：气泡与 Q 弹 */
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.brand-mark, .mic{animation:floaty 6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){
+  body::before,.brand-mark,.mic,.timer.warn{animation:none}
+  .btn,.chip,.list-row{transition:none}
+}
 </style>
 </head>
 <body>
@@ -2012,17 +2262,18 @@ function drawRadar(canvas, dims){
   });
   ctx.closePath();
   const grad = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
-  grad.addColorStop(0, 'rgba(140,166,196,.55)');
-  grad.addColorStop(1, 'rgba(111,134,166,.45)');
+  grad.addColorStop(0, 'rgba(255,178,202,.62)');
+  grad.addColorStop(.6, 'rgba(255,146,176,.5)');
+  grad.addColorStop(1, 'rgba(198,176,240,.52)');
   ctx.fillStyle = grad; ctx.fill();
-  ctx.strokeStyle = 'rgba(79,105,140,.85)'; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.strokeStyle = 'rgba(226,104,140,.85)'; ctx.lineWidth = 1.6; ctx.stroke();
 
   // dots
   dims.forEach((d, i)=>{
     const ratio = clamp(d.score / d.max, 0, 1);
     ctx.beginPath();
     ctx.arc(cx + Math.cos(ang(i)) * R * ratio, cy + Math.sin(ang(i)) * R * ratio, 3, 0, Math.PI*2);
-    ctx.fillStyle = '#4f698c'; ctx.fill();
+    ctx.fillStyle = '#e2688c'; ctx.fill();
   });
 
   // labels
@@ -2049,9 +2300,10 @@ function buildCard(s){
 
   // background
   const bg = ctx.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, '#f7f4ee');
-  bg.addColorStop(.55, '#eff3f9');
-  bg.addColorStop(1, '#f4eae5');
+  bg.addColorStop(0, '#fff6f3');
+  bg.addColorStop(.5, '#fff1f7');
+  bg.addColorStop(.78, '#eff4ff');
+  bg.addColorStop(1, '#eafaf4');
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
   // soft blobs
@@ -2060,8 +2312,9 @@ function buildCard(s){
     g.addColorStop(0, col); g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI*2); ctx.fill();
   };
-  blob(W*0.86, 90, 320, 'rgba(150,175,205,.22)');
-  blob(W*0.1, H*0.9, 380, 'rgba(205,165,150,.16)');
+  blob(W*0.86, 90, 330, 'rgba(255,160,192,.30)');
+  blob(W*0.1, H*0.9, 390, 'rgba(190,175,245,.22)');
+  blob(W*0.55, H*0.35, 300, 'rgba(160,235,215,.14)');
 
   // panel
   const px = 70, py = 90, pw = W - 140, ph = H - 180;
@@ -2074,7 +2327,7 @@ function buildCard(s){
   roundRect(ctx, px, py, pw, ph, 48); ctx.stroke();
 
   // header
-  ctx.fillStyle = '#6b7380';
+  ctx.fillStyle = '#a3859a';
   ctx.font = '600 20px "PingFang SC","Microsoft YaHei",sans-serif';
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   ctx.fillText('I M P R O M P T U   L A B', px + 56, py + 78);
@@ -2086,9 +2339,9 @@ function buildCard(s){
   ctx.textAlign = 'left';
   let cx0 = px + 56, cy0 = py + 120;
   const pill = (label, w)=>{
-    ctx.fillStyle = 'rgba(111,134,166,.12)';
+    ctx.fillStyle = 'rgba(255,143,168,.16)';
     roundRect(ctx, cx0, cy0, w, 42, 21); ctx.fill();
-    ctx.fillStyle = '#4f698c';
+    ctx.fillStyle = '#c4506f';
     ctx.font = '600 19px "PingFang SC","Microsoft YaHei",sans-serif';
     ctx.fillText(label, cx0 + 18, cy0 + 28);
     cx0 += w + 12;
@@ -2109,16 +2362,16 @@ function buildCard(s){
   ctx.font = '700 104px "PingFang SC","Microsoft YaHei",sans-serif';
   ctx.fillText(r.overall.toFixed(1), px + 50, sy + 78);
   const scoreW = ctx.measureText(r.overall.toFixed(1)).width;
-  ctx.fillStyle = '#8b929c';
+  ctx.fillStyle = '#a8899a';
   ctx.font = '400 26px "PingFang SC","Microsoft YaHei",sans-serif';
   ctx.fillText('/ ' + (isEN ? 9 : 5), px + 70 + scoreW, sy + 76);
-  ctx.fillStyle = '#4f698c';
+  ctx.fillStyle = '#c4506f';
   ctx.font = '600 28px "PingFang SC","Microsoft YaHei",sans-serif';
   const bandText = r.band;
   const bw = ctx.measureText(bandText).width + 40;
-  ctx.fillStyle = 'rgba(111,134,166,.14)';
+  ctx.fillStyle = 'rgba(255,143,168,.16)';
   roundRect(ctx, px + pw - 56 - bw, sy + 22, bw, 52, 26); ctx.fill();
-  ctx.fillStyle = '#42608a';
+  ctx.fillStyle = '#bd4064';
   ctx.font = '600 26px "PingFang SC","Microsoft YaHei",sans-serif';
   ctx.fillText(bandText, px + pw - 56 - bw + 20, sy + 58);
 
@@ -2126,11 +2379,11 @@ function buildCard(s){
   let dy = sy + 150;
   const dimW = pw - 112;
   r.dimensions.slice(0, 5).forEach(d=>{
-    ctx.fillStyle = '#3a424e';
+    ctx.fillStyle = '#4a3654';
     ctx.font = '600 22px "PingFang SC","Microsoft YaHei",sans-serif';
     ctx.fillText(d.name.replace(/（.*）/,'').replace(/ \(.*\)/, ''), px + 56, dy);
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#6b7891';
+    ctx.fillStyle = '#b07a95';
     ctx.font = '600 22px "PingFang SC","Microsoft YaHei",sans-serif';
     ctx.fillText(d.score.toFixed(1) + ' / ' + d.max, px + pw - 56, dy);
     ctx.textAlign = 'left';
@@ -2138,7 +2391,7 @@ function buildCard(s){
     ctx.fillStyle = 'rgba(32,36,44,.08)';
     roundRect(ctx, px + 56, dy + 14, dimW, 10, 5); ctx.fill();
     const g = ctx.createLinearGradient(px + 56, 0, px + 56 + dimW, 0);
-    g.addColorStop(0, '#c3d0e0'); g.addColorStop(1, '#6f86a6');
+    g.addColorStop(0, '#ffd3e0'); g.addColorStop(.6, '#ff97b3'); g.addColorStop(1, '#c7b2f2');
     ctx.fillStyle = g;
     roundRect(ctx, px + 56, dy + 14, Math.max(8, dimW * ratio), 10, 5); ctx.fill();
     dy += 66;
@@ -2157,11 +2410,11 @@ function buildCard(s){
     ctx.font = '400 21px "PingFang SC","Microsoft YaHei",sans-serif';
     wrapText(ctx, text, pw - 112, 2).forEach((line, i)=> ctx.fillText(line, px + 56, y + 34 + i * 30));
   };
-  drawBlock(isEN ? 'WHAT WORKED' : '亮点', (r.strengths[0] || '—'), blockY + 26, '#728d78');
-  drawBlock(isEN ? 'NEXT MOVE' : '下一步', (r.improvements[0] || '—'), blockY + 122, '#b0806f');
+  drawBlock(isEN ? 'WHAT WORKED' : '亮点', (r.strengths[0] || '—'), blockY + 26, '#5f9c86');
+  drawBlock(isEN ? 'NEXT MOVE' : '下一步', (r.improvements[0] || '—'), blockY + 122, '#c07a5e');
 
   // footer
-  ctx.fillStyle = '#8b929c';
+  ctx.fillStyle = '#a3899a';
   ctx.font = '400 19px "PingFang SC","Microsoft YaHei",sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText((isEN ? 'Generated locally · ' : '本地生成 · ') + fmtDuration(s.timing.totalSec), px + 56, py + ph - 32);
