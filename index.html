@@ -1248,6 +1248,8 @@ function bindAnswer(){
   if(peek) peek.onclick = ()=>{
     if(s.recall.used >= s.recall.allowed) return;
     s.recall.used++;
+    peek.disabled = true;
+    peek.textContent = app.lang==='zh' ? '已回看' : 'Peeked';
     app.revealed = true;
     const body = document.getElementById('topicBody');
     body.classList.remove('concealed');
@@ -1871,9 +1873,13 @@ function viewResult(){
   const s = currentRecord();
   if(!s) return '<div class="card empty">' + esc(zh?'没有可展示的复盘':'No review to show') + '</div>';
   if(!s.scored){
-    return '<div class="card"><div class="loading"><div class="spinner"></div>' +
-      '<div class="small muted">' + esc(zh?'正在评分…':'Scoring…') + '</div>' +
-      '<div class="tiny muted">' + esc(settings.ai.endpoint && settings.ai.model ? (zh?'调用你配置的 AI 接口':'Calling your AI endpoint') : (zh?'未配置 AI，使用本地规则估算':'No AI configured — local rule estimate')) + '</div>' +
+    const scoring = !!(app.viewData && app.viewData.scoring);
+    return '<div class="card"><div class="loading">' +
+      (scoring ? '<div class="spinner"></div>' : '<span class="pill warm">' + esc(zh?'未评分':'Unscored') + '</span>') +
+      '<div class="small muted">' + esc(scoring ? (zh?'正在评分…':'Scoring…') : (zh?'这场练习还没有评分':'This session has no review yet')) + '</div>' +
+      '<div class="tiny muted">' + esc(scoring
+        ? (settings.ai.endpoint && settings.ai.model ? (zh?'调用你配置的 AI 接口':'Calling your AI endpoint') : (zh?'未配置 AI，使用本地规则估算':'No AI configured — local rule estimate'))
+        : (zh?'可以在这里补评一次。':'Score it now whenever you like.')) + '</div>' +
       '</div></div>' +
       '<div class="card flat">' +
         '<div class="card-head"><h2>' + esc(zh?'作答原文':'Your answer') + '</h2>' +
