@@ -2849,8 +2849,10 @@ function viewSettings(){
    配置指南
    ============================================================ */
 const AI_PRESETS = [
-  {name:'本地代理（推荐，最省事）', url:'http://localhost:8787/v1', model:'deepseek-chat', tag:'零跨域',
-   note:'先双击「启动代理.bat」，Key 与上游地址写在 proxy.config.json 里，页面里不用填 Key。'},
+  {name:'火山方舟 · 豆包', url:'https://ark.cn-beijing.volces.com/api/v3', model:'doubao-seed-2-1-pro-260915', tag:'方舟',
+   note:'地址固定填 /api/v3（不是 /v1）。Model 填方舟控制台「模型列表」里的 Model ID，例如 doubao-seed-2-1-pro-260915；也可填推理接入点 ID（ep- 开头）。方舟不允许浏览器直连，请配本地代理（见下方 A 方案）。'},
+  {name:'本地代理（最省事，默认指向方舟）', url:'http://localhost:8787/v1', model:'doubao-seed-2-1-pro-260915', tag:'零跨域',
+   note:'先双击「启动代理.bat」并在 proxy.config.json 里填 apiKey；页面 Key 留空即可。代理默认上游就是火山方舟。'},
   {name:'DeepSeek 深度求索', url:'https://api.deepseek.com/v1', model:'deepseek-chat', tag:'便宜',
    note:'中文好、价格低；官方接口一般不允许浏览器直连，建议配代理。Key 在 platform.deepseek.com 创建。'},
   {name:'阿里云百炼 · 通义千问', url:'https://dashscope.aliyuncs.com/compatible-mode/v1', model:'qwen-plus', tag:'国内',
@@ -2923,7 +2925,7 @@ function viewGuide(){
     '<div class="divider"></div>' +
     '<div class="guide-step"><div class="n">A</div><div class="body">' +
       '<b>' + esc(zh?'用随包附带的本地代理（推荐）':'Use the bundled local proxy (recommended)') + '</b>' +
-      '<p>' + esc(zh?'① 把 proxy.config.example.json 改名成 proxy.config.json，填 upstream（服务商地址）和 apiKey。':'1. Rename proxy.config.example.json to proxy.config.json, fill upstream and apiKey.') + '</p>' +
+      '<p>' + esc(zh?'① 把 proxy.config.example.json 改名成 proxy.config.json，填 upstream（服务商地址）和 apiKey。默认已填好火山方舟的 upstream，只需要补 apiKey。':'1. Rename proxy.config.example.json to proxy.config.json, fill upstream and apiKey. The Volcengine Ark upstream is pre-filled.') + '</p>' +
       '<p>' + esc(zh?'② 双击「启动代理.bat」，窗口里出现 listening 就是起来了。':'2. Double-click start-proxy.bat; you should see "listening".') + '</p>' +
       '<p>' + esc(zh?'③ 页面里 Endpoint 填 http://localhost:8787/v1，Model 填上游模型名，API Key 留空。':'3. In the app set Endpoint to http://localhost:8787/v1, keep the key empty.') + '</p>' +
     '</div></div>' +
