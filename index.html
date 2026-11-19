@@ -594,6 +594,39 @@ textarea.answer:focus{border-color:#ffb8cc;box-shadow:0 0 0 5px rgba(255,164,190
   body::before,.brand-mark,.mic,.timer.warn{animation:none}
   .btn,.chip,.list-row{transition:none}
 }
+
+/* ============================================================
+   配置指南
+   ============================================================ */
+.guide-step{display:flex;gap:12px;padding:14px 0;border-bottom:1px dashed rgba(190,140,170,.22)}
+.guide-step:last-child{border-bottom:0}
+.guide-step .n{
+  flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  font-weight:700;font-size:13px;color:#fff;
+  background:linear-gradient(160deg,#ffb3c6,#fb7c98);
+  box-shadow:0 8px 16px -10px rgba(251,124,152,.95),inset 0 2px 0 rgba(255,255,255,.6);
+}
+.guide-step .body{flex:1;min-width:0}
+.guide-step .body b{display:block;font-size:13.5px;margin-bottom:3px;color:#45314e}
+.guide-step .body p{font-size:12.5px;color:var(--muted);line-height:1.7}
+.guide-step .body p + p{margin-top:4px}
+.code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;background:rgba(255,143,168,.13);color:#b04a69;
+  padding:2px 8px;border-radius:9px;word-break:break-all;display:inline-block;line-height:1.7;
+  border:1px solid rgba(255,175,198,.5);
+}
+.provider{padding:13px 15px;border-radius:18px;border:2px solid rgba(255,255,255,.94);
+  background:linear-gradient(160deg,#fffdfe,#fff6fa);margin-bottom:9px;
+  box-shadow:0 10px 20px -20px rgba(180,110,150,.6)}
+.provider .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.provider .nm{font-size:13.5px;font-weight:650;color:#45314e}
+.provider .note{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:6px}
+.provider .acts{margin-left:auto}
+.mini-table{display:flex;flex-direction:column;gap:8px}
+.mini-row{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);font-size:12.5px;line-height:1.6}
+.mini-row .k{flex:0 0 78px;font-weight:650;color:#b04a69}
+.mini-row .v{flex:1;min-width:0;color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -833,7 +866,18 @@ function toast(msg){
 }
 function closeModal(){ document.getElementById('modal').classList.remove('on'); }
 
-const supportsVoice = ()=> !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+function voiceEnv(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const host = location.hostname;
+  const secure = !!window.isSecureContext || location.protocol === 'https:' || host === 'localhost' || host === '127.0.0.1';
+  return {
+    sr: !!SR,
+    secure: secure,
+    media: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+    proto: location.protocol
+  };
+}
+const supportsVoice = ()=> voiceEnv().sr;
 
 /* ============================================================
    应用状态
@@ -879,7 +923,8 @@ const NAV = [
 
 function renderNav(){
   const el = document.getElementById('nav');
-  const cur = app.view === 'home' || app.view === 'topic' || app.view === 'prep' || app.view === 'search' || app.view === 'answer' || app.view === 'result' ? 'home' : app.view;
+  const cur = app.view === 'home' || app.view === 'topic' || app.view === 'prep' || app.view === 'search' || app.view === 'answer' || app.view === 'result' ? 'home'
+    : (app.view === 'guide' ? 'settings' : app.view);
   el.innerHTML = NAV.map(n=>
     '<button class="nav-item ' + (n.k === cur ? 'on' : '') + '" data-nav="' + n.k + '">' + ICON[n.icon] +
     '<span>' + esc(t(n.labelKey)) + '</span>' +
@@ -902,7 +947,7 @@ function renderLangSwitch(){
   document.querySelectorAll('#langSwitch button').forEach(b=> b.classList.toggle('on', b.dataset.lang === app.lang));
 }
 
-const ROUTES = ['home','topic','prep','search','answer','result','history','errors','settings'];
+const ROUTES = ['home','topic','prep','search','answer','result','history','errors','settings','guide'];
 
 function setView(name, data){
   clearTick();
@@ -923,7 +968,7 @@ function render(){
   const fn = ({
     home:viewHome, topic:viewTopic, prep:viewPrep, search:viewSearch,
     answer:viewAnswer, result:viewResult, history:viewHistory,
-    errors:viewErrors, settings:viewSettings
+    errors:viewErrors, settings:viewSettings, guide:viewGuide
   })[app.view] || viewHome;
   v.innerHTML = fn();
   bindView(app.view);
@@ -940,9 +985,10 @@ function renderTopbar(){
     result: app.lang==='zh'?'复盘结果':'Review',
     history: app.lang==='zh'?'历史记录':'History',
     errors: app.lang==='zh'?'错误集锦':'Error bank',
-    settings: app.lang==='zh'?'设置':'Settings'
+    settings: app.lang==='zh'?'设置':'Settings',
+    guide: app.lang==='zh'?'配置指南':'Setup guide'
   };
-  const backTo = {topic:'home', prep:'topic', search:'topic', answer: app.mode==='retell' ? 'search' : 'prep', result:'home'}[app.view];
+  const backTo = {topic:'home', prep:'topic', search:'topic', answer: app.mode==='retell' ? 'search' : 'prep', result:'home', guide:'settings'}[app.view];
   const backBtn = backTo ? '<button class="back" data-back="' + backTo + '" aria-label="back">←</button>' : '';
   const ctx = app.view === 'answer' || app.view === 'prep' || app.view === 'search' || app.view === 'topic'
     ? '<span class="pill mono">' + esc(app.lang==='zh'?'中文':'EN') + ' · ' + esc(app.mode==='retell'?(app.lang==='zh'?'概念复述':'Retell'):(app.lang==='zh'?'即兴演讲':'Impromptu')) + '</span>'
@@ -975,10 +1021,14 @@ function modeChips(){
 function inputChips(){
   const zh = app.lang === 'zh';
   const ok = supportsVoice();
+  const env = voiceEnv();
+  const hint = !ok
+    ? (zh?'当前浏览器不支持语音识别，已切换为文本作答。':'Speech recognition is unavailable in this browser; text mode is used.')
+    : (!env.secure ? (zh?'语音识别需在 http://localhost 或 https 下使用；双击「启动网页.bat」再打开可解决。':'Speech needs http://localhost or https — run start-web.bat.') : '');
   return '<div class="chips">' +
     '<button class="chip ' + (app.inputType==='voice'?'on':'') + '" data-set="input" data-v="voice" ' + (ok?'':'disabled style="opacity:.5"') + '>' + (zh?'语音演讲':'Voice') + '</button>' +
     '<button class="chip ' + (app.inputType==='text'?'on':'') + '" data-set="input" data-v="text">' + (zh?'文本写作':'Text') + '</button>' +
-  '</div>' + (!ok ? '<p class="hint-line">' + (zh?'当前浏览器不支持语音识别，已切换为文本作答。':'Speech recognition is unavailable in this browser; switched to text.') + '</p>' : '');
+  '</div>' + (hint ? '<p class="hint-line">' + esc(hint) + '</p>' : '');
 }
 function levelChips(){
   const zh = app.lang === 'zh';
@@ -1008,6 +1058,10 @@ function viewHome(){
       '<span class="pill">3 · ' + esc(zh?'语音或写作':'Speak / write') + '</span>' +
       '<span class="pill">4 · ' + esc(zh?'评分复盘':'Review') + '</span>' +
     '</div>' +
+    (cfg ? '' : '<div class="row" style="margin-top:16px">' +
+      '<button class="btn sm warm" id="guideBtn">' + esc(zh?'还没配 AI？3 分钟接上评分':'No AI yet? Connect it in 3 minutes') + ' →</button>' +
+      '<span class="tiny muted">' + esc(zh?'不配也能用，只是评分改走本地规则':'Optional — local rules work without it') + '</span>' +
+    '</div>') +
   '</div>' +
 
   '<div class="card">' +
@@ -1077,6 +1131,8 @@ function bindHome(){
   });
   const d = document.getElementById('drawBtn');
   if(d) d.onclick = ()=> drawTopic();
+  const gb = document.getElementById('guideBtn');
+  if(gb) gb.onclick = ()=> setView('guide');
   const ci = document.getElementById('customInput');
   if(ci) ci.oninput = ()=> app.customText = ci.value;
   const cg = document.getElementById('customGo');
@@ -1441,7 +1497,12 @@ function viewAnswer(){
     '<textarea class="answer" id="answerText" placeholder="' + esc(zh?'在这里作答；语音模式会实时转写，可直接修改识别错误。':'Type here — voice mode transcribes live and you can fix it.') + '">' + esc(s.content.text) + '</textarea>' +
 
     (s.inputType === 'voice'
-      ? '<div class="voice-zone">' +
+      ? ((!voiceEnv().secure)
+          ? '<div class="mini-row" style="margin-bottom:10px"><div class="k">' + esc(zh?'语音被拦':'Blocked') + '</div><div class="v">' +
+              esc(zh?'当前用 file:// 打开，浏览器会拒绝启动语音识别。双击文件夹里的「启动网页.bat」，在 http://localhost:8080 里重开本页即可。':'You are on file://, so speech is refused. Run start-web.bat and reopen at http://localhost:8080.') +
+            '</div></div>'
+          : '') +
+        '<div class="voice-zone">' +
           '<button class="mic" id="micBtn">' + ICON.mic + '</button>' +
           '<div style="flex:1">' +
             '<div class="row" style="gap:10px">' +
@@ -1557,9 +1618,25 @@ function bindVoice(ta, s){
     btn.classList.toggle('on', recState === 'recording');
     wave.classList.toggle('on', recState === 'recording');
     const zh = app.lang === 'zh';
+    const env = voiceEnv();
     status.textContent = recState === 'recording' ? (zh?'正在识别…（再次点击暂停）':'Listening… (tap to pause)')
       : recState === 'paused' ? (zh?'已暂停，点击继续':'Paused — tap to resume')
+      : !env.sr ? (zh?'当前浏览器不支持语音识别':'Speech recognition unavailable')
+      : !env.secure ? (zh?'需用 http://localhost 打开才能说话':'Needs http://localhost')
       : (zh?'点击麦克风开始':'Tap the mic to start');
+  }
+
+  function errText(code){
+    const zh = app.lang === 'zh';
+    const map = {
+      'not-allowed': zh ? '麦克风权限被拒绝：点地址栏的麦克风图标改成「允许」，再刷新' : 'Mic permission denied — allow it in the address bar, then reload',
+      'service-not-allowed': zh ? '浏览器没有授权语音识别服务' : 'Speech service not allowed',
+      'audio-capture': zh ? '没检测到麦克风设备，检查系统声音输入' : 'No microphone detected',
+      'network': zh ? '语音服务连不上网络（国内网络常见），请改用文本作答' : 'Speech service unreachable — use text',
+      'language-not-supported': zh ? '当前语言不被语音服务支持' : 'Language not supported by the service',
+      'aborted': ''
+    };
+    return map[code] !== undefined ? map[code] : ((zh ? '语音启动失败：' : 'Speech failed: ') + code);
   }
 
   function newRec(){
@@ -1570,6 +1647,11 @@ function bindVoice(ta, s){
     r.continuous = true;
     r.interimResults = true;
     r.maxAlternatives = 1;
+    r.onstart = ()=>{
+      const zh = app.lang === 'zh';
+      status.textContent = zh ? '正在识别…（再次点击暂停）' : 'Listening… (tap to pause)';
+      btn.classList.add('on'); wave.classList.add('on');
+    };
     r.onresult = (e)=>{
       let interim = '';
       for(let i = e.resultIndex; i < e.results.length; i++){
@@ -1585,32 +1667,47 @@ function bindVoice(ta, s){
       if(lm) lm.textContent = s.content.wordCount + ' ' + (s.language==='en'?(app.lang==='zh'?'词':'words'):(app.lang==='zh'?'字':'chars'));
     };
     r.onerror = (e)=>{
-      if(e.error === 'no-speech') return;
-      const zh = app.lang === 'zh';
-      if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
-        recState = 'idle'; setUI();
-        toast(zh?'麦克风权限被拒绝，可改用文本':'Mic permission denied — use text');
-      } else if(e.error === 'network'){
-        recState = 'idle'; setUI();
-        toast(zh?'语音识别连不上网络，可改用文本':'Speech service unreachable — use text');
-      }
+      if(e.error === 'no-speech' || e.error === 'aborted') return;
+      recState = 'idle';
+      setUI();
+      const msg = errText(e.error);
+      if(msg){ status.textContent = msg; toast(msg); }
     };
     r.onend = ()=>{
       if(recState === 'recording'){
         restarts++;
-        try{ r.start(); }catch(err){ recState='idle'; setUI(); }
+        if(restarts > 60){ recState = 'idle'; setUI(); return; }
+        try{ r.start(); }catch(err){ recState = 'idle'; setUI(); }
       }
     };
     return r;
   }
 
   function startRec(){
+    const env = voiceEnv();
+    if(!env.sr){
+      const msg = app.lang==='zh' ? '这个浏览器没有语音识别能力，请改用 Chrome / Edge 或文本作答' : 'This browser has no speech recognition — use Chrome/Edge or text';
+      status.textContent = msg; toast(msg);
+      return;
+    }
+    if(!env.secure){
+      const msg = app.lang==='zh' ? '语音识别需要 http://localhost 或 https；现在是 file:// 打开，浏览器会拒绝启动。双击「启动网页.bat」后再试。' : 'Speech needs http://localhost or https; file:// is refused. Run start-web.bat first.';
+      status.textContent = msg; toast(msg);
+      return;
+    }
     rec = newRec();
     if(!rec) return;
     voiceBase = (ta.value ? ta.value.replace(/\s+$/,'') + ' ' : '');
     voiceFinal = ''; voiceInterim = ''; restarts = 0;
     recState = 'recording';
-    try{ rec.start(); }catch(e){ recState='idle'; }
+    try{
+      rec.start();
+    }catch(e){
+      recState = 'idle'; setUI();
+      const msg = errText(e && e.name === 'InvalidStateError' ? 'invalid-state' : (e && e.name));
+      status.textContent = msg; toast(msg);
+      return;
+    }
     setUI();
   }
   function pauseRec(){
@@ -1624,7 +1721,7 @@ function bindVoice(ta, s){
     rec = newRec();
     if(!rec){ recState='idle'; setUI(); return; }
     recState = 'recording';
-    try{ rec.start(); }catch(e){ recState='idle'; }
+    try{ rec.start(); }catch(e){ recState='idle'; setUI(); return; }
     setUI();
   }
   window.__setVoiceUI = setUI;
@@ -2688,10 +2785,13 @@ function viewSettings(){
     '<div class="card-head"><h2>' + esc(zh?'AI 评分接口':'AI scoring') + '</h2>' +
       '<span class="right tiny muted"><span class="status-dot ' + (configured?'ok':'') + '"></span> ' +
       esc(configured ? (zh?'已配置':'configured') : (zh?'未配置，使用本地规则':'not set — local rules')) + '</span></div>' +
-    '<p class="hint-line" style="margin-bottom:14px">' +
+    '<p class="hint-line" style="margin-bottom:12px">' +
       esc(zh?'接入任意「兼容 OpenAI Chat Completions」的接口即可（自建网关、Azure、各类中转均可）。请求由浏览器直接发出，Key 只存本机，请确认接口允许跨域（CORS）。'
              :'Any OpenAI-compatible Chat Completions endpoint works. The request goes straight from this browser; the key stays local. CORS must be allowed.') +
     '</p>' +
+    '<div class="row" style="margin-bottom:14px">' +
+      '<button class="btn sm warm" id="openGuide">' + esc(zh?'不会配？打开配置指南':'New to this? Open the guide') + ' →</button>' +
+    '</div>' +
     '<div class="field"><label>' + esc(zh?'接口地址 Endpoint':'Endpoint') + '</label>' +
       '<input id="aiEndpoint" placeholder="https://api.example.com/v1" value="' + esc(ai.endpoint || '') + '">' +
       '<span class="tip">' + esc(zh?'填到 /v1 即可，会自动补 /chat/completions':'Base URL; /chat/completions is appended automatically') + '</span></div>' +
@@ -2745,8 +2845,179 @@ function viewSettings(){
   '</div>';
 }
 
+/* ============================================================
+   配置指南
+   ============================================================ */
+const AI_PRESETS = [
+  {name:'本地代理（推荐，最省事）', url:'http://localhost:8787/v1', model:'deepseek-chat', tag:'零跨域',
+   note:'先双击「启动代理.bat」，Key 与上游地址写在 proxy.config.json 里，页面里不用填 Key。'},
+  {name:'DeepSeek 深度求索', url:'https://api.deepseek.com/v1', model:'deepseek-chat', tag:'便宜',
+   note:'中文好、价格低；官方接口一般不允许浏览器直连，建议配代理。Key 在 platform.deepseek.com 创建。'},
+  {name:'阿里云百炼 · 通义千问', url:'https://dashscope.aliyuncs.com/compatible-mode/v1', model:'qwen-plus', tag:'国内',
+   note:'用「兼容 OpenAI」模式地址；在百炼控制台创建 API-KEY。'},
+  {name:'月之暗面 Kimi', url:'https://api.moonshot.cn/v1', model:'moonshot-v1-8k', tag:'国内',
+   note:'在 platform.moonshot.cn 创建 Key，长文本表现好。'},
+  {name:'智谱 GLM', url:'https://open.bigmodel.cn/api/paas/v4', model:'glm-4-flash', tag:'有免费额度',
+   note:'glm-4-flash 有免费额度，适合先试通流程。'},
+  {name:'硅基流动 SiliconFlow', url:'https://api.siliconflow.cn/v1', model:'Qwen/Qwen2.5-7B-Instruct', tag:'聚合',
+   note:'一个 Key 可调多家模型；模型名要写全，例如 Qwen/Qwen2.5-7B-Instruct。'},
+  {name:'OpenAI', url:'https://api.openai.com/v1', model:'gpt-4o-mini', tag:'通用',
+   note:'评分质量稳，需要外网与外币卡；官方接口不支持浏览器直连，务必配代理。'},
+  {name:'OpenRouter', url:'https://openrouter.ai/api/v1', model:'openai/gpt-4o-mini', tag:'聚合',
+   note:'一个 Key 调多家模型，按量计费；模型名写成 openai/gpt-4o-mini 这种格式。'}
+];
+
+function viewGuide(){
+  const zh = app.lang === 'zh';
+  const env = voiceEnv();
+  const providers = AI_PRESETS.map((p, i)=>
+    '<div class="provider">' +
+      '<div class="top">' +
+        '<span class="nm">' + esc(p.name) + '</span>' +
+        '<span class="pill accent">' + esc(p.tag) + '</span>' +
+        '<span class="acts"><button class="btn sm" data-preset="' + i + '">' + esc(zh?'填入这组':'Fill in') + '</button></span>' +
+      '</div>' +
+      '<div><span class="code">' + esc(p.url) + '</span></div>' +
+      '<div style="margin-top:6px"><span class="code">' + esc(p.model) + '</span></div>' +
+      '<div class="note">' + esc(p.note) + '</div>' +
+    '</div>'
+  ).join('');
+
+  return '' +
+  '<div class="card hero">' +
+    '<span class="pill accent">' + esc(zh?'手把手 · 约 3 分钟':'Guided · ~3 min') + '</span>' +
+    '<h2 style="margin-top:12px">' + esc(zh?'把 AI 评分接通，顺便把麦克风修好':'Connect AI scoring and fix the mic') + '</h2>' +
+    '<p>' + esc(zh?'不配 AI 也能用（走本地规则估算）。但只要填对三项，评分就会变成真正的逐条批改。':'Works without AI via local rules. Fill three fields and you get real item-by-item feedback.') + '</p>' +
+    '<div class="steps">' +
+      '<span class="pill">1 · ' + esc(zh?'拿 Key':'Get a key') + '</span>' +
+      '<span class="pill">2 · ' + esc(zh?'填三项':'Fill 3 fields') + '</span>' +
+      '<span class="pill">3 · ' + esc(zh?'测试连接':'Test') + '</span>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'三步接通 AI 评分':'Three steps') + '</h2></div>' +
+    '<div class="guide-step"><div class="n">1</div><div class="body">' +
+      '<b>' + esc(zh?'挑一家服务商，创建一个 API Key':'Pick a provider and create an API key') + '</b>' +
+      '<p>' + esc(zh?'注册后在控制台找到「API Key / 密钥」页面，点创建，复制那串以 sk- 开头的字符。它相当于密码，不要发群、不要提交到公开仓库。':'Find the API keys page in the provider console, create one, copy the sk- string. Treat it like a password.') + '</p>' +
+    '</div></div>' +
+    '<div class="guide-step"><div class="n">2</div><div class="body">' +
+      '<b>' + esc(zh?'在「设置」里填三个框':'Fill the three fields in Settings') + '</b>' +
+      '<p>' + esc(zh?'Endpoint 填服务商给的基础地址（到 /v1 就够，程序会自动补 /chat/completions）；API Key 粘贴密钥；Model 填模型名，必须和服务商文档里写的一模一样。':'Endpoint is the base URL up to /v1 — /chat/completions is appended automatically. Model names must match the provider docs exactly.') + '</p>' +
+    '</div></div>' +
+    '<div class="guide-step"><div class="n">3</div><div class="body">' +
+      '<b>' + esc(zh?'点「测试连接」，出现「连接成功」就算通了':'Hit "Test connection"') + '</b>' +
+      '<p>' + esc(zh?'回到首页做一场，结果页右上角会显示「AI 评分 · 模型名」。若失败，先看下面的报错对照表。':'Back on the home page run a session; the result page will say "AI · model". If it fails, check the error table below.') + '</p>' +
+    '</div></div>' +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'照着填：常见服务商':'Copy-paste presets') + '</h2>' +
+      '<span class="right tiny muted">' + esc(zh?'点「填入这组」会写进设置，Key 仍要你自己粘':'Preset fills endpoint + model only') + '</span></div>' +
+    providers +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'如果卡在「跨域 / CORS」':'If CORS blocks you') + '</h2></div>' +
+    '<p class="hint-line">' + esc(zh?'绝大多数官方 API 不允许网页直接调用（浏览器会先发一个预检请求，被拒就报 CORS 错误）。这不是你填错了，是浏览器安全策略。两种解法：':'Most official APIs refuse direct browser calls (CORS). Two ways around it:') + '</p>' +
+    '<div class="divider"></div>' +
+    '<div class="guide-step"><div class="n">A</div><div class="body">' +
+      '<b>' + esc(zh?'用随包附带的本地代理（推荐）':'Use the bundled local proxy (recommended)') + '</b>' +
+      '<p>' + esc(zh?'① 把 proxy.config.example.json 改名成 proxy.config.json，填 upstream（服务商地址）和 apiKey。':'1. Rename proxy.config.example.json to proxy.config.json, fill upstream and apiKey.') + '</p>' +
+      '<p>' + esc(zh?'② 双击「启动代理.bat」，窗口里出现 listening 就是起来了。':'2. Double-click start-proxy.bat; you should see "listening".') + '</p>' +
+      '<p>' + esc(zh?'③ 页面里 Endpoint 填 http://localhost:8787/v1，Model 填上游模型名，API Key 留空。':'3. In the app set Endpoint to http://localhost:8787/v1, keep the key empty.') + '</p>' +
+    '</div></div>' +
+    '<div class="guide-step"><div class="n">B</div><div class="body">' +
+      '<b>' + esc(zh?'自己有网关（one-api / new-api 之类）':'Or use your own gateway') + '</b>' +
+      '<p>' + esc(zh?'填网关地址即可；网关通常已经处理了跨域，也能给不同模型做统一入口。':'Point Endpoint at your gateway; gateways usually handle CORS for you.') + '</p>' +
+    '</div></div>' +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'报错对照表':'Error cheat sheet') + '</h2></div>' +
+    '<div class="mini-table">' +
+      '<div class="mini-row"><div class="k">401</div><div class="v">' + esc(zh?'Key 不对或没带上。检查是否漏字符、是否多空格。':'Bad or missing key. Check for typos and stray spaces.') + '</div></div>' +
+      '<div class="mini-row"><div class="k">403</div><div class="v">' + esc(zh?'Key 没有该模型权限，或账号未实名/地区受限。':'Key lacks access to that model, or the account/region is restricted.') + '</div></div>' +
+      '<div class="mini-row"><div class="k">404</div><div class="v">' + esc(zh?'地址拼错。多数情况填到 /v1 即可，别把 /chat/completions 重复写两遍。':'Wrong URL — usually stop at /v1; do not repeat /chat/completions.') + '</div></div>' +
+      '<div class="mini-row"><div class="k">429</div><div class="v">' + esc(zh?'额度用尽或请求过快。充值或降低频率，本地规则仍可用。':'Quota or rate limit — top up or slow down; local rules still work.') + '</div></div>' +
+      '<div class="mini-row"><div class="k">CORS</div><div class="v">' + esc(zh?'浏览器拦了跨域。用上面 A 方案的本地代理。':'Browser blocked cross-origin. Use the local proxy (option A).') + '</div></div>' +
+      '<div class="mini-row"><div class="k">timeout</div><div class="v">' + esc(zh?'代理没启动、地址写错，或网络到不了服务商。先开代理窗口看有没有 listening。':'Proxy not running, wrong host, or unreachable network.') + '</div></div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'麦克风为什么打不开':'Why the mic fails') + '</h2>' +
+      '<span class="right pill ' + (env.secure ? 'green' : 'warm') + '">' + esc(env.secure ? (zh?'当前是安全环境':'Secure context') : (zh?'当前不是安全环境':'Not a secure context')) + '</span></div>' +
+    '<div class="mini-table">' +
+      '<div class="mini-row"><div class="k">' + esc(zh?'原因':'Cause') + '</div><div class="v">' + esc(zh?'语音识别被浏览器限定在 https 或 localhost 下；双击 HTML 文件时地址是 file:///…，接口会直接拒绝启动，看起来就像"点了没反应"。':'Speech recognition only runs on https or localhost. With file:/// the API refuses to start, so the button seems dead.') + '</div></div>' +
+      '<div class="mini-row"><div class="k">' + esc(zh?'解法':'Fix') + '</div><div class="v">' + esc(zh?'双击「启动网页.bat」，浏览器会自动打开 http://localhost:8080，在这个地址里用语音即可（推荐 Chrome / Edge）。':'Double-click start-web.bat — it opens http://localhost:8080 where speech works.') + '</div></div>' +
+      '<div class="mini-row"><div class="k">' + esc(zh?'权限':'Permission') + '</div><div class="v">' + esc(zh?'第一次点麦克风，浏览器会弹「允许使用麦克风」；若误点拒绝，点地址栏左侧的图标改成允许，再刷新。':'Allow the mic on first prompt; if denied, fix it in the address-bar permissions and reload.') + '</div></div>' +
+      '<div class="mini-row"><div class="k">' + esc(zh?'网络':'Network') + '</div><div class="v">' + esc(zh?'Chrome 的语音识别要连 Google 的语音服务，国内网络可能报 network 错误，此时只能用文本作答。':'Chrome sends audio to an online service; restricted networks may throw a network error — use text then.') + '</div></div>' +
+    '</div>' +
+    '<div class="divider"></div>' +
+    '<div class="row" style="justify-content:space-between">' +
+      '<div class="row">' +
+        '<button class="btn" id="testMic">' + esc(zh?'自检麦克风':'Check microphone') + '</button>' +
+        '<span class="tiny muted" id="micStatus">' + esc(zh?'点一下看看设备与权限':'Tap to check device & permission') + '</span>' +
+      '</div>' +
+      '<button class="btn primary" id="backSettings">' + esc(zh?'去填配置':'Go to settings') + ' →</button>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card flat">' +
+    '<div class="card-head"><h2>' + esc(zh?'费用与隐私':'Cost & privacy') + '</h2></div>' +
+    '<p class="hint-line">' + esc(zh?'一次评分大约几百到一千 token，按常见价格约几分钱；建议在服务商后台设一个月度限额。Key 只存在你这台机器的浏览器里，页面代码不会上传它；但如果把浏览器数据导出给别人，Key 也会一起带走。':'One review costs a few hundred to ~1k tokens — pennies. Set a monthly cap at the provider. The key stays in this browser’s localStorage; an exported JSON would contain it.') + '</p>' +
+  '</div>';
+}
+
+function bindGuide(){
+  const zh = app.lang === 'zh';
+  document.querySelectorAll('[data-preset]').forEach(b=>{
+    b.onclick = ()=>{
+      const p = AI_PRESETS[Number(b.dataset.preset)];
+      if(!p) return;
+      settings.ai.endpoint = p.url;
+      settings.ai.model = p.model;
+      saveSettings();
+      toast(zh ? ('已填入 ' + p.name + '，接着粘 Key 并测试') : ('Filled ' + p.name + ' — paste the key and test'));
+      setView('settings');
+    };
+  });
+  const mic = document.getElementById('testMic');
+  if(mic) mic.onclick = async ()=>{
+    const st = document.getElementById('micStatus');
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      st.textContent = zh ? '这个浏览器不给用麦克风接口' : 'No microphone API here';
+      return;
+    }
+    st.textContent = zh ? '正在申请权限…' : 'Asking permission…';
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const n = devices.filter(d=> d.kind === 'audioinput').length;
+      stream.getTracks().forEach(tk=> tk.stop());
+      st.textContent = zh ? ('麦克风可用 · 检测到 ' + n + ' 个输入设备') : ('Mic works · ' + n + ' input device(s)');
+      toast(zh ? '麦克风权限正常' : 'Microphone OK');
+    }catch(err){
+      const name = err && err.name ? err.name : 'Error';
+      const map = {
+        NotAllowedError: zh ? '权限被拒绝：点地址栏的麦克风图标改成允许，再刷新' : 'Permission denied — allow it in the address bar, then reload',
+        NotFoundError: zh ? '没找到麦克风设备，检查系统声音设置' : 'No microphone found',
+        NotReadableError: zh ? '设备被别的程序占用（会议/录音软件）' : 'Device busy in another app',
+        SecurityError: zh ? '当前地址不安全，需用 http://localhost' : 'Insecure context — use http://localhost'
+      };
+      st.textContent = (map[name] || name);
+      toast(st.textContent);
+    }
+  };
+  const back = document.getElementById('backSettings');
+  if(back) back.onclick = ()=> setView('settings');
+}
+
 function bindSettings(){
   const zh = app.lang === 'zh';
+  const og = document.getElementById('openGuide');
+  if(og) og.onclick = ()=> setView('guide');
   document.getElementById('saveAI').onclick = ()=>{
     settings.ai = {
       endpoint: document.getElementById('aiEndpoint').value.trim(),
@@ -2833,7 +3104,7 @@ function bindView(name){
   const fn = ({
     home:bindHome, topic:bindTopic, prep:bindPrep, search:bindSearch,
     answer:bindAnswer, result:bindResult, history:bindHistory,
-    errors:bindErrors, settings:bindSettings
+    errors:bindErrors, settings:bindSettings, guide:bindGuide
   })[name];
   if(fn) fn();
 }
@@ -2845,7 +3116,7 @@ document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal();
 
 (function boot(){
   const h = (location.hash || '').replace('#/','');
-  if(['history','errors','settings'].indexOf(h) >= 0) app.view = h;
+  if(['history','errors','settings','guide'].indexOf(h) >= 0) app.view = h;
   render();
 })();
 </script>
