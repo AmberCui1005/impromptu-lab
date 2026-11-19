@@ -1,0 +1,2594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>即兴表达训练场 · Impromptu Lab</title>
+<meta name="description" content="双语随机演讲与写作练习：抽题、限时准备、语音或文本作答、AI 评分复盘与错误集锦。">
+<style>
+:root{
+  --bg:#f4f2ee;
+  --ink:#20242c;
+  --ink-2:#4a5058;
+  --muted:#7d838c;
+  --line:rgba(32,36,44,.10);
+  --accent:#6f86a6;
+  --accent-deep:#4d6484;
+  --accent-soft:#e6edf6;
+  --warm:#c99c8d;
+  --warm-soft:#f6ebe6;
+  --green:#8aa392;
+  --green-soft:#e8efe9;
+  --danger:#c2705f;
+  --shadow:0 18px 40px -22px rgba(38,44,56,.35);
+  --shadow-sm:0 8px 22px -14px rgba(38,44,56,.35);
+  --r:22px;
+  --side:240px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;color:var(--ink);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+  background:
+    radial-gradient(1100px 620px at 8% -8%, #e9eef7 0%, rgba(233,238,247,0) 62%),
+    radial-gradient(900px 540px at 96% 10%, #f6eae4 0%, rgba(246,234,228,0) 60%),
+    radial-gradient(800px 600px at 60% 110%, #eef1e9 0%, rgba(238,241,233,0) 60%),
+    var(--bg);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:inherit}
+h1,h2,h3,h4,p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+::selection{background:var(--accent-soft)}
+
+/* ---------- shell ---------- */
+.shell{display:flex;min-height:100vh;gap:24px;padding:22px;max-width:1400px;margin:0 auto}
+.side{
+  width:var(--side);flex:0 0 var(--side);position:sticky;top:22px;align-self:flex-start;
+  height:calc(100vh - 44px);display:flex;flex-direction:column;gap:18px;
+  padding:22px 18px;border-radius:26px;
+  background:rgba(255,255,255,.62);
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(22px) saturate(1.15);-webkit-backdrop-filter:blur(22px) saturate(1.15);
+}
+.brand{display:flex;gap:11px;align-items:center;padding:2px 4px 8px}
+.brand-mark{
+  width:40px;height:40px;border-radius:14px;display:grid;place-items:center;
+  font-weight:700;font-size:17px;color:#fff;letter-spacing:.02em;
+  background:linear-gradient(150deg,#7d94b3,#576f90);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 18px -12px rgba(60,80,110,.8);
+}
+.brand-text{display:flex;flex-direction:column;line-height:1.25}
+.brand-text b{font-size:15px;font-weight:650;letter-spacing:.01em}
+.brand-text span{font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:15px;
+  color:var(--ink-2);font-size:14px;transition:.18s ease;width:100%;text-align:left;
+}
+.nav-item svg{width:17px;height:17px;opacity:.72;flex:0 0 auto}
+.nav-item:hover{background:rgba(255,255,255,.6)}
+.nav-item.on{color:#20304a;background:linear-gradient(180deg,#fff,#eef3fa);box-shadow:inset 0 1px 0 #fff,var(--shadow-sm);font-weight:600}
+.nav-item.on svg{opacity:1}
+.nav-item .dot{margin-left:auto;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+.lang-switch{display:flex;padding:4px;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid var(--line)}
+.lang-switch button{flex:1;padding:8px 0;border-radius:11px;font-size:12.5px;color:var(--muted);transition:.18s}
+.lang-switch button.on{background:linear-gradient(180deg,#fff,#e9eff7);color:var(--accent-deep);font-weight:600;box-shadow:0 4px 12px -8px rgba(50,70,100,.5)}
+.privacy{font-size:11px;color:var(--muted);text-align:center;line-height:1.5}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+.topbar{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 4px}
+.topbar .crumb{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)}
+.back{
+  width:34px;height:34px;border-radius:12px;display:grid;place-items:center;
+  background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow-sm);
+}
+.back:hover{background:#fff}
+.topbar h1{font-size:19px;font-weight:650;letter-spacing:.01em}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.view{display:flex;flex-direction:column;gap:16px;padding-bottom:40px;animation:rise .32s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+/* ---------- surfaces ---------- */
+.card{
+  background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);
+  border-radius:var(--r);box-shadow:var(--shadow);
+  backdrop-filter:blur(18px) saturate(1.1);-webkit-backdrop-filter:blur(18px) saturate(1.1);
+  padding:22px;
+}
+.card.flat{background:rgba(255,255,255,.55);box-shadow:none}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.card-head h2{font-size:15.5px;font-weight:650;letter-spacing:.01em}
+.card-head .sub{font-size:12px;color:var(--muted)}
+.card-head .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.sect-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.divider{height:1px;background:var(--line);margin:16px 0}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:11px 18px;border-radius:14px;font-size:13.5px;font-weight:600;
+  background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(244,247,251,.9));
+  border:1px solid rgba(255,255,255,.9);color:var(--ink-2);
+  box-shadow:0 8px 18px -14px rgba(40,50,70,.55),inset 0 1px 0 #fff;
+  transition:transform .12s ease,box-shadow .18s,background .18s;
+}
+.btn:hover{box-shadow:0 12px 22px -14px rgba(40,50,70,.55),inset 0 1px 0 #fff}
+.btn:active{transform:scale(.975)}
+.btn.primary{
+  color:#fff;background:linear-gradient(160deg,#7f96b5,#55708f);
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 14px 26px -16px rgba(55,80,115,.9);
+}
+.btn.primary:hover{background:linear-gradient(160deg,#87a0c0,#4f6c8c)}
+.btn.ghost{background:transparent;box-shadow:none;border:1px solid var(--line);color:var(--ink-2)}
+.btn.danger{color:#8d4235;background:linear-gradient(180deg,#fff,#f8ece8);border-color:rgba(194,112,95,.25)}
+.btn.sm{padding:7px 12px;font-size:12.5px;border-radius:11px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;pointer-events:none;filter:saturate(.6)}
+.btn.warm{color:#7c4a3c;background:linear-gradient(180deg,#fff,#f7ebe5);border-color:rgba(201,156,141,.35)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12px;background:rgba(255,255,255,.7);border:1px solid var(--line);color:var(--ink-2)}
+.pill.accent{background:var(--accent-soft);border-color:rgba(111,134,166,.2);color:var(--accent-deep)}
+.pill.warm{background:var(--warm-soft);border-color:rgba(201,156,141,.28);color:#8a5a4b}
+.pill.green{background:var(--green-soft);border-color:rgba(138,163,146,.3);color:#4d6754}
+.pill.mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+.chip{
+  padding:8px 14px;border-radius:13px;font-size:13px;color:var(--ink-2);
+  background:rgba(255,255,255,.66);border:1px solid var(--line);transition:.16s;white-space:nowrap;
+}
+.chip:hover{border-color:rgba(111,134,166,.35)}
+.chip.on{background:linear-gradient(180deg,#fff,#e7edf6);border-color:rgba(111,134,166,.35);color:var(--accent-deep);font-weight:600;box-shadow:inset 0 1px 0 #fff,0 6px 14px -12px rgba(40,60,90,.6)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.tiny{font-size:11px}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* ---------- homepage ---------- */
+.hero{padding:30px 28px;position:relative;overflow:hidden}
+.hero::after{
+  content:"";position:absolute;right:-80px;top:-90px;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,rgba(140,163,190,.30),rgba(140,163,190,0) 68%);
+  pointer-events:none;
+}
+.hero h2{font-size:clamp(22px,3.4vw,30px);line-height:1.32;letter-spacing:-.01em;font-weight:700}
+.hero p{color:var(--muted);font-size:13.5px;margin-top:9px;max-width:52ch}
+.hero .steps{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.opt-block{display:flex;flex-direction:column;gap:9px}
+.opt-label{display:flex;align-items:baseline;gap:8px}
+.opt-label b{font-size:13px;font-weight:650}
+.opt-label span{font-size:11.5px;color:var(--muted)}
+.topic-peek{
+  display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:18px;
+  background:linear-gradient(160deg,rgba(255,255,255,.85),rgba(239,244,250,.7));
+  border:1px solid rgba(255,255,255,.95);
+}
+.topic-peek .q{font-size:15px;font-weight:600;line-height:1.55}
+.topic-peek .q-en{font-size:12.5px;color:var(--muted);line-height:1.5}
+.duration-pick{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
+.duration-pick select{
+  padding:7px 10px;border-radius:11px;border:1px solid var(--line);background:#fff;font-size:12.5px;
+}
+
+/* ---------- session ---------- */
+.topic-pin{
+  display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-radius:18px;
+  background:linear-gradient(160deg,rgba(255,255,255,.9),rgba(240,245,251,.72));
+  border:1px solid rgba(255,255,255,.95);box-shadow:var(--shadow-sm);
+}
+.topic-pin .mark{font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;padding-top:2px;flex:0 0 74px}
+.topic-pin .body{flex:1;min-width:0}
+.topic-pin .body .zh{font-size:16.5px;font-weight:650;line-height:1.55}
+.topic-pin .body .en{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
+.timer-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0 2px}
+.timer{
+  font-size:clamp(40px,9vw,62px);font-weight:650;letter-spacing:.02em;line-height:1;
+  font-variant-numeric:tabular-nums;color:var(--accent-deep);
+}
+.timer.warn{color:var(--danger);animation:beat 1s ease infinite}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+.timer-label{font-size:11.5px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.progress{width:100%;height:5px;border-radius:99px;background:rgba(32,36,44,.08);overflow:hidden}
+.progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#9db2cb,#5f7fa4);width:0;transition:width .4s linear}
+.progress.warn i{background:linear-gradient(90deg,#dcab9b,#b8604d)}
+
+textarea.answer{
+  width:100%;min-height:230px;resize:vertical;padding:18px;border-radius:18px;
+  border:1px solid var(--line);background:rgba(255,255,255,.9);line-height:1.75;font-size:14.5px;
+  box-shadow:inset 0 1px 3px rgba(20,30,45,.04);
+}
+textarea.answer:focus{outline:none;border-color:rgba(111,134,166,.5);box-shadow:0 0 0 4px rgba(111,134,166,.12)}
+textarea.outline{min-height:120px;font-size:14px}
+.answer-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.mic{
+  width:74px;height:74px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(160deg,#fff,#eef2f8);border:1px solid rgba(255,255,255,.95);
+  box-shadow:0 16px 30px -18px rgba(40,60,90,.7),inset 0 1px 0 #fff;transition:.2s;
+}
+.mic.on{background:linear-gradient(160deg,#8fa6c2,#5c7a9b);color:#fff;box-shadow:0 0 0 6px rgba(111,134,166,.14),0 16px 30px -18px rgba(40,60,90,.9)}
+.mic svg{width:26px;height:26px}
+.voice-zone{display:flex;align-items:center;gap:16px;padding:14px 0}
+.wave{display:flex;gap:3px;align-items:flex-end;height:22px}
+.wave i{width:3px;border-radius:2px;background:var(--accent);height:6px;opacity:.35;transition:.2s}
+.wave.on i{opacity:.9;animation:wv .9s ease-in-out infinite}
+.wave.on i:nth-child(2){animation-delay:.15s}
+.wave.on i:nth-child(3){animation-delay:.3s}
+.wave.on i:nth-child(4){animation-delay:.45s}
+.wave.on i:nth-child(5){animation-delay:.6s}
+@keyframes wv{0%,100%{height:5px}50%{height:19px}}
+.hint-line{font-size:12px;color:var(--muted);line-height:1.6}
+.concept-card{
+  display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;
+  padding:34px 20px;border-radius:24px;
+  background:linear-gradient(165deg,#fff,#eaf0f8);
+  border:1px solid rgba(255,255,255,.95);box-shadow:var(--shadow);
+}
+.concept-card .k{font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:-.01em}
+.concept-card .e{font-size:14px;color:var(--accent-deep);letter-spacing:.06em;text-transform:uppercase}
+.concept-card .d{font-size:12px;color:var(--muted);letter-spacing:.12em;margin-top:4px}
+.concealed{filter:blur(9px);user-select:none;opacity:.55}
+
+/* ---------- result ---------- */
+.score-hero{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.score-big{font-size:clamp(46px,7vw,64px);font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.score-big small{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:4px}
+.band{font-size:13px;padding:6px 13px;border-radius:999px;background:var(--accent-soft);color:var(--accent-deep);font-weight:650}
+.radar{width:100%;max-width:250px;aspect-ratio:1;margin:0 auto}
+.dim-row{display:flex;flex-direction:column;gap:6px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.dim-row:last-child{border-bottom:0}
+.dim-row .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13px}
+.dim-row .top b{font-weight:600}
+.dim-row .top .sc{font-variant-numeric:tabular-nums;color:var(--accent-deep);font-weight:650;font-size:12.5px}
+.dim-bar{height:6px;border-radius:99px;background:rgba(32,36,44,.07);overflow:hidden}
+.dim-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#b6c5d8,#6f86a6)}
+.dim-row .cmt{font-size:12px;color:var(--muted);line-height:1.6}
+.list-block{display:flex;flex-direction:column;gap:9px}
+.list-item{display:flex;gap:10px;font-size:13px;line-height:1.62;color:var(--ink-2)}
+.list-item .b{flex:0 0 18px;height:18px;border-radius:7px;display:grid;place-items:center;font-size:10px;font-weight:700;margin-top:2px}
+.b.good{background:var(--green-soft);color:#4d6754}
+.b.bad{background:var(--warm-soft);color:#8a5a4b}
+.err-item{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.62);border:1px solid var(--line);display:flex;flex-direction:column;gap:5px}
+.err-item .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--muted)}
+.err-item .ex{font-size:13px;font-style:italic;color:var(--ink-2);border-left:2px solid rgba(111,134,166,.4);padding-left:9px}
+.err-item .iss{font-size:12.5px}
+.err-item .sug{font-size:12.5px;color:#4d6754}
+.empty{padding:36px;text-align:center;color:var(--muted);font-size:13px}
+.loading{display:flex;flex-direction:column;gap:12px;align-items:center;padding:26px}
+.spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(111,134,166,.2);border-top-color:var(--accent);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- lists / history ---------- */
+.list-row{
+  display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:16px;
+  background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.85);transition:.16s;
+}
+.list-row:hover{background:rgba(255,255,255,.85);box-shadow:var(--shadow-sm)}
+.list-row .main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.list-row .t{font-size:14px;font-weight:600;line-height:1.45;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-row .m{font-size:11.5px;color:var(--muted);display:flex;gap:9px;flex-wrap:wrap}
+.list-row .score{font-variant-numeric:tabular-nums;font-size:19px;font-weight:700;color:var(--accent-deep);min-width:44px;text-align:right}
+.list-row .score.na{font-size:12px;color:var(--muted);font-weight:500}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.62);border:1px solid var(--line)}
+.stat .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .k{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-top:2px}
+.cat-bar{display:flex;flex-direction:column;gap:6px;padding:9px 0}
+.cat-bar .top{display:flex;justify-content:space-between;font-size:12.5px}
+.cat-bar .bar{height:5px;border-radius:99px;background:rgba(32,36,44,.07);overflow:hidden}
+.cat-bar .bar i{display:block;height:100%;background:linear-gradient(90deg,#dcb7a8,#c08d79);border-radius:99px}
+
+/* ---------- settings ---------- */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.field .tip{font-size:11.5px;color:var(--muted);line-height:1.5}
+.field input,.field select,.field textarea{
+  padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.9);font-size:13px;
+}
+.field input:focus,.field select:focus{outline:none;border-color:rgba(111,134,166,.5);box-shadow:0 0 0 4px rgba(111,134,166,.12)}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:#b9bec6}
+.status-dot.ok{background:var(--green)}
+.status-dot.bad{background:var(--danger)}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  padding:11px 18px;border-radius:13px;background:rgba(32,36,44,.9);color:#fff;font-size:13px;
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.6);transition:.24s;z-index:99;max-width:82vw;text-align:center;
+  backdrop-filter:blur(10px);
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- card modal ---------- */
+.modal{position:fixed;inset:0;background:rgba(28,32,40,.5);backdrop-filter:blur(6px);display:none;place-items:center;z-index:90;padding:20px}
+.modal.on{display:grid}
+.modal-body{max-width:min(420px,94vw);max-height:88vh;overflow:auto;border-radius:22px;background:#fff;box-shadow:0 40px 80px -40px rgba(0,0,0,.6);padding:14px}
+.modal-body img{width:100%;border-radius:14px;display:block}
+.modal-actions{display:flex;gap:10px;margin-top:12px;justify-content:flex-end}
+
+/* ---------- responsive ---------- */
+@media (max-width:980px){
+  .shell{padding:14px;gap:0;flex-direction:column}
+  .side{
+    position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;width:100%;flex:none;z-index:60;
+    flex-direction:row;align-items:center;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    border-radius:20px 20px 0 0;border-bottom:0;
+  }
+  .brand{display:none}
+  .nav{flex-direction:row;flex:1;gap:2px}
+  .nav-item{flex-direction:column;gap:3px;padding:8px 4px;font-size:11px;border-radius:12px;justify-content:center;text-align:center}
+  .nav-item svg{width:19px;height:19px}
+  .nav-item .dot{display:none}
+  .side-foot{display:none}
+  .main{padding-bottom:74px}
+  .topbar{padding-top:6px}
+  .grid-2,.grid-4,.stat-grid{grid-template-columns:1fr 1fr}
+  .hero{padding:24px 20px}
+  .card{padding:18px;border-radius:20px}
+}
+@media (max-width:560px){
+  .grid-4,.stat-grid{grid-template-columns:1fr 1fr}
+  .topic-pin{flex-direction:column;gap:6px}
+  .topic-pin .mark{flex:none;padding:0}
+  .score-hero{gap:16px}
+  .btn{padding:10px 15px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <div class="brand-mark">即</div>
+      <div class="brand-text"><b>即兴表达训练场</b><span>Impromptu Lab</span></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div class="lang-switch" id="langSwitch">
+        <button data-lang="zh">中文</button>
+        <button data-lang="en">English</button>
+      </div>
+      <p class="privacy">作答与评分仅保存在本机浏览器</p>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar" id="topbar"></div>
+    <div class="view" id="view"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="modal-body" id="modalBody"></div></div>
+
+<script>
+/* ============================================================
+   即兴表达训练场 — 单文件应用
+   仅使用原生 JS；数据存于 localStorage
+   ============================================================ */
+
+/* ---------- 文案 ---------- */
+const T = {
+  appName:{zh:'即兴表达训练场',en:'Impromptu Lab'},
+  navHome:{zh:'练习',en:'Practice'},
+  navHistory:{zh:'历史',en:'History'},
+  navErrors:{zh:'错题集',en:'Errors'},
+  navSettings:{zh:'设置',en:'Settings'},
+  start:{zh:'开始',en:'Start'},
+  next:{zh:'下一步',en:'Next'},
+  抽题:{zh:'抽一题',en:'Draw a topic'},
+  换一题:{zh:'换一题',en:'Another'},
+  开始准备:{zh:'开始准备',en:'Start preparing'},
+  开始作答:{zh:'开始作答',en:'Start answering'},
+  提交:{zh:'提交并评分',en:'Submit & score'},
+  重新评分:{zh:'重新评分',en:'Rescore'},
+  返回:{zh:'返回',en:'Back'},
+};
+const t = (k)=> (T[k] && (T[k][app.lang] || T[k].zh)) || k;
+
+/* ---------- 话题分类 ---------- */
+const CATEGORIES = [
+  {k:'education', zh:'教育', en:'Education'},
+  {k:'tech', zh:'科技', en:'Technology'},
+  {k:'society', zh:'社会文化', en:'Society & Culture'},
+  {k:'career', zh:'职场与面试', en:'Career & Interview'},
+  {k:'life', zh:'生活与观点', en:'Life & Opinion'},
+  {k:'abstract', zh:'抽象概念', en:'Abstract'},
+  {k:'ethics', zh:'伦理与争议', en:'Ethics'},
+];
+const catName = (k)=> { const c = CATEGORIES.find(x=>x.k===k); return c ? c[app.lang] : (k==='custom'? (app.lang==='zh'?'自定义':'Custom') : k) };
+
+/* ---------- 即兴题（内置中英双语） ----------
+   d: 难度 1-3   f: 适用体裁 sp=口语 wr=写作 b=both        */
+const QUESTIONS_RAW = [
+  {c:'education',d:2,f:'b',zh:'学校是否应该把财商教育设为必修课？',en:'Should schools make financial literacy a compulsory subject?'},
+  {c:'education',d:1,f:'b',zh:'AI 时代，作业还有必要吗？',en:'Is homework still necessary in the age of AI?'},
+  {c:'education',d:2,f:'sp',zh:'好老师更重要的是学识还是共情？',en:'What matters more in a good teacher: knowledge or empathy?'},
+  {c:'education',d:3,f:'wr',zh:'大学排名是否应该左右学生的选择？',en:'Should university rankings drive a student\u2019s choice?'},
+  {c:'education',d:2,f:'b',zh:'职业教育是否被不公平地看低了？',en:'Is vocational education unfairly looked down upon?'},
+  {c:'education',d:3,f:'wr',zh:'「快乐教育」是解放还是放纵？',en:'Is "happy schooling" liberation or indulgence?'},
+
+  {c:'tech',d:2,f:'b',zh:'AI 会让人的创造力更值钱，还是更不值钱？',en:'Will AI make human creativity more valuable or less?'},
+  {c:'tech',d:3,f:'b',zh:'社交平台该不该为算法放大的内容负责？',en:'Should platforms be responsible for what their algorithms amplify?'},
+  {c:'tech',d:2,f:'b',zh:'数字时代，隐私是否成了奢侈品？',en:'Is privacy becoming a luxury good in the digital age?'},
+  {c:'tech',d:1,f:'sp',zh:'我们是否高估了自动化对日常生活的帮助？',en:'Do we overestimate how much automation helps daily life?'},
+  {c:'tech',d:1,f:'b',zh:'学校是否应该全面禁止智能手机？',en:'Should schools ban smartphones entirely?'},
+  {c:'tech',d:3,f:'wr',zh:'技术进步是否必然带来生活质量的提升？',en:'Does technological progress always improve quality of life?'},
+
+  {c:'society',d:3,f:'b',zh:'方言的消失是否不可避免？这重要吗？',en:'Is the loss of local dialects inevitable, and does it matter?'},
+  {c:'society',d:2,f:'b',zh:'博物馆是否应该把文物归还原属国？',en:'Should museums return artifacts to their countries of origin?'},
+  {c:'society',d:2,f:'b',zh:'快节奏的城市生活让人更孤独了吗？',en:'Does fast urban life make people lonelier?'},
+  {c:'society',d:2,f:'sp',zh:'「拼搏文化」是美德还是陷阱？',en:'Is hustle culture a virtue or a trap?'},
+  {c:'society',d:3,f:'wr',zh:'传统不商业化还能活下去吗？',en:'Can tradition survive without being commercialized?'},
+  {c:'society',d:1,f:'b',zh:'社交媒体上的「点赞」改变了友谊吗？',en:'Has the "like" button changed friendship?'},
+
+  {c:'career',d:2,f:'sp',zh:'讲一次你失败的经历，以及你因此改变了什么。',en:'Tell us about a time you failed and what you changed afterwards.'},
+  {c:'career',d:3,f:'sp',zh:'相比经验更丰富的人，为什么我们要录用你？',en:'Why should we hire you over someone with more experience?'},
+  {c:'career',d:2,f:'b',zh:'频繁跳槽是聪明策略还是危险信号？',en:'Is job-hopping a smart strategy or a red flag?'},
+  {c:'career',d:2,f:'sp',zh:'如果当众与上级意见不合，你会怎么处理？',en:'How would you handle a public disagreement with your manager?'},
+  {c:'career',d:3,f:'wr',zh:'除了升职，「职业成长」对你意味着什么？',en:'Beyond promotion, what does professional growth mean to you?'},
+  {c:'career',d:1,f:'b',zh:'面试中最容易被高估的能力是什么？',en:'Which skill is most overrated in interviews?'},
+
+  {c:'life',d:2,f:'b',zh:'钱应该花在物品上，还是体验上？',en:'Is it better to spend money on things or on experiences?'},
+  {c:'life',d:3,f:'b',zh:'应该鼓励年轻人独居吗？',en:'Should young people be encouraged to live alone?'},
+  {c:'life',d:2,f:'b',zh:'极简主义是一种哲学，还是消费潮流？',en:'Is minimalism a philosophy or just a consumer trend?'},
+  {c:'life',d:3,f:'wr',zh:'我们对父母是否有无条件顺从的义务？',en:'Do we owe our parents unconditional obedience?'},
+  {c:'life',d:1,f:'sp',zh:'沉默在现代交流中是否被低估了？',en:'Is silence underrated in modern conversation?'},
+  {c:'life',d:1,f:'b',zh:'一个人吃饭，是孤独还是自由？',en:'Eating alone: loneliness or freedom?'},
+
+  {c:'abstract',d:3,f:'b',zh:'什么是「运气」？它能够被人为设计吗？',en:'What is luck, and can it be engineered?'},
+  {c:'abstract',d:3,f:'wr',zh:'「公平」关乎规则，还是关乎结果？',en:'Is fairness about rules or about outcomes?'},
+  {c:'abstract',d:2,f:'b',zh:'今天，什么让一件事物显得「真实」？',en:'What makes something feel authentic today?'},
+  {c:'abstract',d:2,f:'sp',zh:'用一个你自己的例子解释「机会成本」。',en:'Explain opportunity cost with an example from your own life.'},
+  {c:'abstract',d:3,f:'wr',zh:'除了权利，「自由」还需要什么？',en:'Besides rights, what does freedom require?'},
+  {c:'abstract',d:2,f:'b',zh:'「专注」在今天为什么变得这么难？',en:'Why has focus become so hard to sustain today?'},
+
+  {c:'ethics',d:3,f:'b',zh:'是否应该允许基因编辑来预防遗传病？',en:'Should gene editing be allowed to prevent inherited disease?'},
+  {c:'ethics',d:2,f:'b',zh:'用动物取乐是否道德？',en:'Is it ethical to use animals for entertainment?'},
+  {c:'ethics',d:3,f:'wr',zh:'企业能否用员工数据做实验？',en:'Should companies be allowed to experiment on employee data?'},
+  {c:'ethics',d:3,f:'b',zh:'举报是否总是一种道德义务？',en:'Is whistleblowing always a moral duty?'},
+  {c:'ethics',d:2,f:'sp',zh:'为了照顾别人的感受而说谎，可以吗？',en:'Is it ever right to lie to protect someone\u2019s feelings?'},
+  {c:'ethics',d:3,f:'wr',zh:'大学是否应该接受争议行业的捐款？',en:'Should universities accept donations from controversial industries?'},
+];
+const QUESTIONS = QUESTIONS_RAW.map((q,i)=>Object.assign({},q,{id:'q'+i, cat:q.c}));
+
+/* ---------- 概念库（只给名字，不提供材料） ---------- */
+const CONCEPTS_RAW = [
+  {zh:'机会成本',en:'Opportunity cost',dom:'经济学',d:2,hint:'搜：机会成本 定义 + 一个生活例子'},
+  {zh:'沉没成本',en:'Sunk cost',dom:'经济学',d:1,hint:'搜：沉没成本 与「及时止损」'},
+  {zh:'复利',en:'Compound interest',dom:'金融',d:1,hint:'搜：复利公式 + 72 法则'},
+  {zh:'边际效用递减',en:'Diminishing marginal utility',dom:'经济学',d:2,hint:'搜：边际效用 递减 举例'},
+  {zh:'规模经济',en:'Economies of scale',dom:'商业',d:2,hint:'搜：规模经济 vs 规模不经济'},
+  {zh:'网络效应',en:'Network effects',dom:'商业',d:2,hint:'搜：网络效应 双边市场'},
+  {zh:'护城河',en:'Economic moat',dom:'商业',d:2,hint:'搜：巴菲特 护城河 五类'},
+  {zh:'长尾理论',en:'Long tail theory',dom:'商业',d:2,hint:'搜：长尾理论 与 二八定律 对比'},
+  {zh:'摩尔定律',en:'Moore\u2019s law',dom:'科技',d:1,hint:'搜：摩尔定律 现状 失效'},
+  {zh:'大语言模型',en:'Large language model',dom:'科技',d:2,hint:'搜：LLM 预训练 微调 推理'},
+  {zh:'过拟合',en:'Overfitting',dom:'科技',d:2,hint:'搜：过拟合 欠拟合 正则化'},
+  {zh:'强化学习',en:'Reinforcement learning',dom:'科技',d:2,hint:'搜：强化学习 奖励 策略'},
+  {zh:'区块链',en:'Blockchain',dom:'科技',d:2,hint:'搜：区块链 共识机制 去中心化'},
+  {zh:'图灵测试',en:'Turing test',dom:'科技',d:1,hint:'搜：图灵测试 与 中文房间'},
+  {zh:'囚徒困境',en:'Prisoner\u2019s dilemma',dom:'博弈论',d:1,hint:'搜：囚徒困境 合作 演化'},
+  {zh:'纳什均衡',en:'Nash equilibrium',dom:'博弈论',d:2,hint:'搜：纳什均衡 定义 举例'},
+  {zh:'零和博弈',en:'Zero-sum game',dom:'博弈论',d:1,hint:'搜：零和博弈 与 正和博弈'},
+  {zh:'幸存者偏差',en:'Survivorship bias',dom:'统计',d:1,hint:'搜：幸存者偏差 经典案例'},
+  {zh:'确认偏误',en:'Confirmation bias',dom:'心理学',d:1,hint:'搜：确认偏误 定义 例子'},
+  {zh:'锚定效应',en:'Anchoring effect',dom:'心理学',d:1,hint:'搜：锚定效应 定价 谈判'},
+  {zh:'邓宁-克鲁格效应',en:'Dunning-Kruger effect',dom:'心理学',d:2,hint:'搜：达克效应 四个阶段'},
+  {zh:'马斯洛需求层次',en:'Maslow\u2019s hierarchy',dom:'心理学',d:1,hint:'搜：马斯洛 五层需求 批评'},
+  {zh:'奥卡姆剃刀',en:'Occam\u2019s razor',dom:'哲学',d:2,hint:'搜：奥卡姆剃刀 原理 反例'},
+  {zh:'电车难题',en:'Trolley problem',dom:'伦理学',d:1,hint:'搜：电车难题 功利主义 义务论'},
+  {zh:'无知之幕',en:'Veil of ignorance',dom:'政治哲学',d:3,hint:'搜：罗尔斯 无知之幕 正义论'},
+  {zh:'路径依赖',en:'Path dependence',dom:'社会学',d:3,hint:'搜：路径依赖 锁定效应'},
+  {zh:'文化资本',en:'Cultural capital',dom:'社会学',d:3,hint:'搜：布迪厄 文化资本 三种形式'},
+  {zh:'破窗效应',en:'Broken windows theory',dom:'社会学',d:1,hint:'搜：破窗效应 治安 争议'},
+  {zh:'马太效应',en:'Matthew effect',dom:'社会学',d:1,hint:'搜：马太效应 强者愈强'},
+  {zh:'飞轮效应',en:'Flywheel effect',dom:'商业',d:2,hint:'搜：亚马逊 飞轮效应'},
+];
+const CONCEPTS = CONCEPTS_RAW.map((c,i)=>Object.assign({},c,{id:'c'+i, cat:'concept'}));
+
+/* ---------- 计时档位 ---------- */
+const LEVELS = {
+  quick:    {zh:'快',   en:'Quick',    prep:30,  answer:90,  search:180, retell:90},
+  standard: {zh:'标准', en:'Standard', prep:60,  answer:150, search:300, retell:120},
+  deep:     {zh:'深度', en:'Deep',     prep:120, answer:240, search:600, retell:180},
+  none:     {zh:'不限时',en:'Untimed', prep:0,   answer:0,   search:0,   retell:0},
+};
+
+/* ============================================================
+   存储层（localStorage 不可用时退化为内存）
+   ============================================================ */
+const mem = {};
+const store = {
+  get(k, d){
+    try{
+      const v = localStorage.getItem(k);
+      return v ? JSON.parse(v) : (mem[k] !== undefined ? mem[k] : d);
+    }catch(e){ return mem[k] !== undefined ? mem[k] : d; }
+  },
+  set(k, v){
+    try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ mem[k] = v; }
+  },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} delete mem[k]; }
+};
+
+const KEY = {settings:'lab.settings', sessions:'lab.sessions', errors:'lab.errors'};
+const DEFAULT_SETTINGS = {
+  defaultLanguage:'zh',
+  defaultMode:'impromptu',
+  defaultInputType:'voice',
+  defaultLevel:'standard',
+  ai:{ endpoint:'', apiKey:'', model:'gpt-4o-mini' },
+  rounds:{ zh:0, en:0 }
+};
+
+let settings = Object.assign({}, DEFAULT_SETTINGS, store.get(KEY.settings, {}));
+settings.ai = Object.assign({}, DEFAULT_SETTINGS.ai, settings.ai || {});
+let sessions = store.get(KEY.sessions, []) || [];
+let errorBank = store.get(KEY.errors, []) || [];
+
+function saveSettings(){ store.set(KEY.settings, settings); }
+function saveSessions(){ store.set(KEY.sessions, sessions); }
+function saveErrors(){ store.set(KEY.errors, errorBank); }
+
+/* ============================================================
+   基础工具
+   ============================================================ */
+const uid = ()=> Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = (s)=> String(s == null ? '' : s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const clamp = (n, a, b)=> Math.max(a, Math.min(b, n));
+const round1 = (n)=> Math.round(n * 10) / 10;
+
+function fmtClock(sec){
+  sec = Math.max(0, Math.ceil(sec));
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+}
+function fmtDuration(sec){
+  sec = Math.max(0, Math.round(sec));
+  if(sec < 60) return sec + (app.lang === 'zh' ? ' 秒' : 's');
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m + (app.lang === 'zh' ? ' 分 ' : 'm ') + (s ? s + (app.lang === 'zh' ? ' 秒' : 's') : '');
+}
+function fmtDate(iso){
+  const d = new Date(iso);
+  const p = (n)=> (n < 10 ? '0' : '') + n;
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function countWords(text, lang){
+  if(!text) return 0;
+  if(lang === 'en'){
+    const m = text.trim().match(/[A-Za-z0-9''-]+/g);
+    return m ? m.length : 0;
+  }
+  return text.replace(/\s+/g, '').length;
+}
+
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove('on'), 2600);
+}
+function closeModal(){ document.getElementById('modal').classList.remove('on'); }
+
+const supportsVoice = ()=> !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+/* ============================================================
+   应用状态
+   ============================================================ */
+const app = {
+  lang: settings.defaultLanguage || 'zh',
+  mode: settings.defaultMode || 'impromptu',
+  inputType: settings.defaultInputType || 'voice',
+  level: settings.defaultLevel || 'standard',
+  answerSecOverride: null,
+  category: 'all',
+  current: null,        // 当前题目/概念对象
+  customText: '',
+  session: null,
+  view: 'home',
+  viewData: {},
+  lastReview: null,
+  filters: {historyLang:'all', historyMode:'all', errLang:'all', errCat:'all', errRange:'all', showMastered:false}
+};
+if(!supportsVoice() && app.inputType === 'voice') app.inputType = 'text';
+
+/* ============================================================
+   图标
+   ============================================================ */
+const ICON = {
+  play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 4.5v15l14-7.5-14-7.5z"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3.5 21 20H3L12 3.5z"/><path d="M12 9v4.5M12 16.5v.6"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>',
+  spark:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/></svg>',
+};
+
+/* ============================================================
+   导航与路由
+   ============================================================ */
+const NAV = [
+  {k:'home', labelKey:'navHome', icon:'play'},
+  {k:'history', labelKey:'navHistory', icon:'clock'},
+  {k:'errors', labelKey:'navErrors', icon:'alert'},
+  {k:'settings', labelKey:'navSettings', icon:'gear'},
+];
+
+function renderNav(){
+  const el = document.getElementById('nav');
+  const cur = app.view === 'home' || app.view === 'topic' || app.view === 'prep' || app.view === 'search' || app.view === 'answer' || app.view === 'result' ? 'home' : app.view;
+  el.innerHTML = NAV.map(n=>
+    '<button class="nav-item ' + (n.k === cur ? 'on' : '') + '" data-nav="' + n.k + '">' + ICON[n.icon] +
+    '<span>' + esc(t(n.labelKey)) + '</span>' +
+    (n.k === 'history' && sessions.length ? '<span class="dot">' + sessions.length + '</span>' : '') +
+    (n.k === 'errors' && errorBank.filter(e=>!e.mastered).length ? '<span class="dot">' + errorBank.filter(e=>!e.mastered).length + '</span>' : '') +
+    '</button>'
+  ).join('');
+  el.querySelectorAll('[data-nav]').forEach(b=> b.onclick = ()=> setView(b.dataset.nav));
+  document.querySelectorAll('#langSwitch button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.lang === app.lang);
+    b.onclick = ()=>{
+      app.lang = b.dataset.lang;
+      settings.defaultLanguage = app.lang;
+      saveSettings();
+      renderNav(); renderLangSwitch(); render();
+    };
+  });
+}
+function renderLangSwitch(){
+  document.querySelectorAll('#langSwitch button').forEach(b=> b.classList.toggle('on', b.dataset.lang === app.lang));
+}
+
+const ROUTES = ['home','topic','prep','search','answer','result','history','errors','settings'];
+
+function setView(name, data){
+  clearTick();
+  stopVoice(true);
+  app.view = name;
+  app.viewData = data || {};
+  if(name !== 'answer') app.session = (name === 'result' || name === 'history') ? app.session : null;
+  const hash = '#/' + name;
+  if(location.hash !== hash){ try{ history.replaceState(null, '', hash); }catch(e){} }
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function render(){
+  renderNav(); renderLangSwitch();
+  renderTopbar();
+  const v = document.getElementById('view');
+  const fn = ({
+    home:viewHome, topic:viewTopic, prep:viewPrep, search:viewSearch,
+    answer:viewAnswer, result:viewResult, history:viewHistory,
+    errors:viewErrors, settings:viewSettings
+  })[app.view] || viewHome;
+  v.innerHTML = fn();
+  bindView(app.view);
+}
+
+function renderTopbar(){
+  const bar = document.getElementById('topbar');
+  const titles = {
+    home: app.lang==='zh'?'练习台':'Practice',
+    topic: app.lang==='zh'?'题目':'Topic',
+    prep: app.lang==='zh'?'准备阶段':'Preparation',
+    search: app.lang==='zh'?'自主检索':'Research',
+    answer: app.lang==='zh'?'作答中':'Answering',
+    result: app.lang==='zh'?'复盘结果':'Review',
+    history: app.lang==='zh'?'历史记录':'History',
+    errors: app.lang==='zh'?'错误集锦':'Error bank',
+    settings: app.lang==='zh'?'设置':'Settings'
+  };
+  const backTo = {topic:'home', prep:'topic', search:'topic', answer: app.mode==='retell' ? 'search' : 'prep', result:'home'}[app.view];
+  const backBtn = backTo ? '<button class="back" data-back="' + backTo + '" aria-label="back">←</button>' : '';
+  const ctx = app.view === 'answer' || app.view === 'prep' || app.view === 'search' || app.view === 'topic'
+    ? '<span class="pill mono">' + esc(app.lang==='zh'?'中文':'EN') + ' · ' + esc(app.mode==='retell'?(app.lang==='zh'?'概念复述':'Retell'):(app.lang==='zh'?'即兴演讲':'Impromptu')) + '</span>'
+    : '';
+  const extra = app.view === 'home'
+    ? '<button class="pill accent" data-nav="settings">' + (app.lang==='zh'?'AI 配置':'AI setup') + '</button>' : '';
+  bar.innerHTML = backBtn + '<h1>' + esc(titles[app.view] || '') + '</h1>' + ctx + '<div class="top-actions">' + extra + '</div>';
+  const b = bar.querySelector('[data-back]');
+  if(b) b.onclick = ()=> setView(b.dataset.back);
+  const s = bar.querySelector('[data-nav]');
+  if(s) s.onclick = ()=> setView('settings');
+}
+
+/* ============================================================
+   首页
+   ============================================================ */
+function langChips(){
+  return '<div class="chips">' +
+    '<button class="chip ' + (app.lang==='zh'?'on':'') + '" data-set="lang" data-v="zh">中文</button>' +
+    '<button class="chip ' + (app.lang==='en'?'on':'') + '" data-set="lang" data-v="en">English</button>' +
+  '</div>';
+}
+function modeChips(){
+  const zh = app.lang === 'zh';
+  return '<div class="chips">' +
+    '<button class="chip ' + (app.mode==='impromptu'?'on':'') + '" data-set="mode" data-v="impromptu">' + (zh?'即兴演讲 / 观点写作':'Impromptu talk') + '</button>' +
+    '<button class="chip ' + (app.mode==='retell'?'on':'') + '" data-set="mode" data-v="retell">' + (zh?'概念检索复述':'Concept retell') + '</button>' +
+  '</div>';
+}
+function inputChips(){
+  const zh = app.lang === 'zh';
+  const ok = supportsVoice();
+  return '<div class="chips">' +
+    '<button class="chip ' + (app.inputType==='voice'?'on':'') + '" data-set="input" data-v="voice" ' + (ok?'':'disabled style="opacity:.5"') + '>' + (zh?'语音演讲':'Voice') + '</button>' +
+    '<button class="chip ' + (app.inputType==='text'?'on':'') + '" data-set="input" data-v="text">' + (zh?'文本写作':'Text') + '</button>' +
+  '</div>' + (!ok ? '<p class="hint-line">' + (zh?'当前浏览器不支持语音识别，已切换为文本作答。':'Speech recognition is unavailable in this browser; switched to text.') + '</p>' : '');
+}
+function levelChips(){
+  const zh = app.lang === 'zh';
+  const lv = LEVELS;
+  return '<div class="chips">' + Object.keys(lv).filter(k=>k!=='none').map(k=>{
+    const name = zh ? lv[k].zh : lv[k].en;
+    const desc = app.mode === 'retell' ? (zh?('检索 '+fmtDuration(lv[k].search)+' / 复述 '+fmtDuration(lv[k].retell)):('search '+lv[k].search+'s / retell '+lv[k].retell+'s'))
+      : (zh?('准备 '+fmtDuration(lv[k].prep)+' / 作答 '+fmtDuration(lv[k].answer)):('prep '+lv[k].prep+'s / talk '+lv[k].answer+'s'));
+    return '<button class="chip ' + (app.level===k?'on':'') + '" data-set="level" data-v="' + k + '" title="' + desc + '">' + name + '</button>';
+  }).join('') + '<button class="chip ' + (app.level==='none'?'on':'') + '" data-set="level" data-v="none">' + (zh?'不限时':'Untimed') + '</button></div>';
+}
+
+function viewHome(){
+  const zh = app.lang === 'zh';
+  const cfg = settings.ai.endpoint && settings.ai.model;
+  const scored = sessions.filter(s=>s.scored && s.review).length;
+  const avg = scored ? round1(sessions.filter(s=>s.scored).reduce((a,s)=>a + s.review.overall, 0) / scored) : null;
+  const pool = app.mode === 'retell' ? CONCEPTS.length : QUESTIONS.filter(q=> app.category==='all' || q.cat===app.category).length;
+  return '' +
+  '<div class="card hero">' +
+    '<span class="pill accent">' + esc(zh?'雅思 + 面试表达双标准':'IELTS + interview rubric') + '</span>' +
+    '<h2 style="margin-top:14px">' + esc(zh?'抽题、准备、开口，\n然后看见自己的表达。':'Draw a prompt, prepare, speak —\nand see your expression clearly.'.replace(/\n/g,' ')) + '</h2>' +
+    '<p>' + esc(zh?'限时作答后按雅思（英文）与结构化面试（中文）分项评分，自动归档亮点、改进点与错误清单。':'Timed answers scored dimension by dimension, with highlights, fixes and an error bank.') + '</p>' +
+    '<div class="steps">' +
+      '<span class="pill">1 · ' + esc(zh?'抽题':'Draw') + '</span>' +
+      '<span class="pill">2 · ' + esc(zh?'准备 / 检索':'Prepare') + '</span>' +
+      '<span class="pill">3 · ' + esc(zh?'语音或写作':'Speak / write') + '</span>' +
+      '<span class="pill">4 · ' + esc(zh?'评分复盘':'Review') + '</span>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'本轮设置':'This round') + '</h2><span class="sub">' + esc(zh?'随时可改，抽题后也生效':'Change any time') + '</span></div>' +
+    '<div class="grid-2">' +
+      '<div class="opt-block"><div class="opt-label"><b>' + esc(zh?'语言':'Language') + '</b><span>' + esc(zh?'题目与评分标准联动':'Prompts & rubric follow') + '</span></div>' + langChips() + '</div>' +
+      '<div class="opt-block"><div class="opt-label"><b>' + esc(zh?'模式':'Mode') + '</b><span>' + esc(zh?'两种流程':'Two flows') + '</span></div>' + modeChips() + '</div>' +
+      '<div class="opt-block"><div class="opt-label"><b>' + esc(zh?'输入体裁':'Input') + '</b><span>' + esc(zh?'作答页仍可切换':'Switchable later') + '</span></div>' + inputChips() + '</div>' +
+      '<div class="opt-block"><div class="opt-label"><b>' + esc(zh?'节奏档位':'Pace') + '</b><span>' + esc(zh?'决定准备与作答时长':'Sets timings') + '</span></div>' + levelChips() + '</div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="grid-2">' +
+    '<div class="card">' +
+      '<div class="card-head"><h2>' + esc(app.mode==='retell' ? (zh?'抽一个概念':'Draw a concept') : (zh?'从题库抽题':'Draw a prompt')) + '</h2>' +
+        '<span class="right pill mono">' + pool + ' ' + esc(zh?'题可选':'in pool') + '</span></div>' +
+      (app.mode==='retell'
+        ? '<p class="hint-line">' + esc(zh?'系统只给概念名称，材料由你自己上网检索整理。':'You get the concept name only — you do the research yourself.') + '</p>'
+        : '<div class="chips" style="margin-bottom:14px">' +
+            '<button class="chip ' + (app.category==='all'?'on':'') + '" data-cat="all">' + esc(zh?'全部':'All') + '</button>' +
+            CATEGORIES.map(c=>'<button class="chip ' + (app.category===c.k?'on':'') + '" data-cat="' + c.k + '">' + esc(c[app.lang]) + '</button>').join('') +
+          '</div>') +
+      '<button class="btn primary block" id="drawBtn" style="margin-top:14px">' + ICON.spark + ' ' + esc(zh?'抽一题':'Draw a prompt') + '</button>' +
+    '</div>' +
+
+    '<div class="card">' +
+      '<div class="card-head"><h2>' + esc(zh?'自定义题目':'Custom prompt') + '</h2></div>' +
+      '<div class="field" style="margin-bottom:10px">' +
+        '<textarea id="customInput" rows="3" placeholder="' + esc(zh?'中英混排都可以，例如：远程办公会削弱团队文化吗？':'Type any prompt, Chinese or English…') + '" style="padding:12px;border-radius:13px;border:1px solid var(--line);background:#fff;font-size:13.5px;resize:vertical">' + esc(app.customText) + '</textarea>' +
+      '</div>' +
+      '<div class="row" style="justify-content:space-between">' +
+        '<span class="tiny muted">' + esc(zh?'自定义题目仅记入本场练习':'Saved with this session only') + '</span>' +
+        '<button class="btn sm" id="customGo">' + esc(zh?'用它开始':'Use this') + '</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card flat">' +
+    '<div class="card-head"><h2>' + esc(zh?'最近状态':'Overview') + '</h2>' +
+      '<span class="right">' +
+        '<span class="status-dot ' + (cfg ? 'ok' : '') + '"></span>' +
+        '<span class="tiny muted">' + esc(cfg ? (zh?'AI 评分已配置':'AI scoring ready') : (zh?'未配置 AI，将用本地规则估算':'No AI yet — local rule estimate')) + '</span>' +
+      '</span>' +
+    '</div>' +
+    '<div class="stat-grid">' +
+      '<div class="stat"><div class="v">' + sessions.length + '</div><div class="k">' + esc(zh?'练习场次':'Sessions') + '</div></div>' +
+      '<div class="stat"><div class="v">' + (avg === null ? '—' : avg) + '</div><div class="k">' + esc(zh?'平均总分':'Avg score') + '</div></div>' +
+      '<div class="stat"><div class="v">' + errorBank.filter(e=>!e.mastered).length + '</div><div class="k">' + esc(zh?'待改进条目':'Open errors') + '</div></div>' +
+      '<div class="stat"><div class="v">' + errorBank.filter(e=>e.mastered).length + '</div><div class="k">' + esc(zh?'已掌握':'Mastered') + '</div></div>' +
+    '</div>' +
+  '</div>';
+}
+
+function bindHome(){
+  document.querySelectorAll('[data-set]').forEach(b=>{
+    b.onclick = ()=>{
+      const k = b.dataset.set, v = b.dataset.v;
+      if(k === 'lang'){ app.lang = v; settings.defaultLanguage = v; saveSettings(); render(); return; }
+      if(k === 'mode'){ app.mode = v; app.category = 'all'; settings.defaultMode = v; }
+      if(k === 'input'){ app.inputType = v; settings.defaultInputType = v; }
+      if(k === 'level'){ app.level = v; settings.defaultLevel = v; }
+      saveSettings(); render();
+    };
+  });
+  document.querySelectorAll('[data-cat]').forEach(b=>{
+    b.onclick = ()=>{ app.category = b.dataset.cat; render(); };
+  });
+  const d = document.getElementById('drawBtn');
+  if(d) d.onclick = ()=> drawTopic();
+  const ci = document.getElementById('customInput');
+  if(ci) ci.oninput = ()=> app.customText = ci.value;
+  const cg = document.getElementById('customGo');
+  if(cg) cg.onclick = ()=>{
+    const text = (document.getElementById('customInput').value || '').trim();
+    if(!text){ toast(app.lang==='zh'?'先写一个题目':'Enter a prompt first'); return; }
+    app.customText = text;
+    app.current = {id:'custom', zh:text, en:text, cat:'custom', custom:true, langMixed:true};
+    setView('topic');
+  };
+}
+
+function drawTopic(){
+  if(app.mode === 'retell'){
+    const pool = CONCEPTS;
+    app.current = Object.assign({}, pool[Math.floor(Math.random()*pool.length)], {concept:true});
+  } else {
+    let pool = QUESTIONS.filter(q=> app.category==='all' || q.cat===app.category);
+    if(!pool.length) pool = QUESTIONS;
+    let pick = pool[Math.floor(Math.random()*pool.length)];
+    // 避免与上一题重复
+    if(app.current && app.current.id && pool.length > 1){
+      let guard = 0;
+      while(pick.id === app.current.id && guard++ < 8) pick = pool[Math.floor(Math.random()*pool.length)];
+    }
+    app.current = Object.assign({}, pick);
+  }
+  app.customText = '';
+  setView('topic');
+}
+
+/* ============================================================
+   题目页
+   ============================================================ */
+function topicText(item){
+  if(!item) return '';
+  return app.lang === 'zh' ? (item.zh || item.en) : (item.en || item.zh);
+}
+function topicAlt(item){
+  if(!item) return '';
+  return app.lang === 'zh' ? (item.en || '') : (item.zh || '');
+}
+function topicTag(item){
+  if(!item) return '';
+  if(item.concept) return (app.lang==='zh'?'概念 · ':'Concept · ') + esc(item.dom || '');
+  if(item.custom) return app.lang==='zh'?'自定义题目':'Custom';
+  return esc(catName(item.cat)) + ' · ' + esc(['','基础','进阶','挑战'][item.d] || '');
+}
+
+function viewTopic(){
+  const zh = app.lang === 'zh';
+  const item = app.current;
+  if(!item) return '<div class="card empty">' + esc(zh?'还没有抽题':'No prompt yet') + '</div>';
+  const isRetell = app.mode === 'retell';
+  const lv = LEVELS[app.level] || LEVELS.standard;
+  const phaseTime = isRetell ? lv.search : lv.prep;
+  return '' +
+  '<div class="card">' +
+    '<div class="card-head">' +
+      '<span class="pill accent">' + topicTag(item) + '</span>' +
+      '<span class="right small muted">' + esc(app.lang==='zh'?'语言':'Language') + ' · ' + (app.lang==='zh'?'中文':'English') + '</span>' +
+    '</div>' +
+    '<div class="topic-peek">' +
+      '<div class="q">' + esc(topicText(item)) + '</div>' +
+      (topicAlt(item) ? '<div class="q-en">' + esc(topicAlt(item)) + '</div>' : '') +
+      (item.hint ? '<div class="tiny muted">' + esc(zh?'检索提示：':'Search hint: ') + esc(item.hint) + '</div>' : '') +
+    '</div>' +
+    (!isRetell && !item.custom
+      ? '<div class="chips" style="margin-top:16px">' +
+          '<button class="chip ' + (app.category==='all'?'on':'') + '" data-cat2="all">' + esc(zh?'全部分类':'All') + '</button>' +
+          CATEGORIES.map(c=>'<button class="chip ' + (app.category===c.k?'on':'') + '" data-cat2="' + c.k + '">' + esc(c[app.lang]) + '</button>').join('') +
+        '</div>' : '') +
+    '<div class="divider"></div>' +
+    '<div class="row" style="justify-content:space-between">' +
+      '<div class="row">' +
+        '<button class="btn ghost" id="redraw">' + esc(zh?'换一题':'Draw another') + '</button>' +
+        '<span class="pill mono">' + esc(zh ? (isRetell ? '检索 ' : '准备 ') : (isRetell ? 'Research ' : 'Prep ')) +
+          (app.level==='none' ? esc(zh?'不限时':'untimed') : fmtClock(phaseTime)) + '</span>' +
+      '</div>' +
+      '<button class="btn primary" id="confirmTopic">' + esc(isRetell ? (zh?'开始自主检索':'Start research') : (zh?'开始准备':'Start preparing')) + ' →</button>' +
+    '</div>' +
+    '<p class="hint-line" style="margin-top:12px">' +
+      esc(zh ? (isRetell ? '检索阶段由你自己上网搜索整理，系统只计时、不提供材料。' : '准备阶段可列提纲；题目在作答全程常驻，不会隐藏。')
+            : (isRetell ? 'Research on your own — the app only keeps time, it never supplies material.' : 'Outline during prep; the prompt stays visible while you answer.')) +
+    '</p>' +
+  '</div>' +
+
+  '<div class="card flat">' +
+    '<div class="card-head"><h2>' + esc(zh?'本场参数':'Session settings') + '</h2></div>' +
+    '<div class="grid-2">' +
+      '<div class="opt-block"><div class="opt-label"><b>' + esc(zh?'输入体裁':'Input') + '</b></div>' + inputChips() + '</div>' +
+      '<div class="opt-block"><div class="opt-label"><b>' + esc(zh?'节奏档位':'Pace') + '</b></div>' + levelChips() + '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function bindTopic(){
+  const item = app.current;
+  document.querySelectorAll('[data-set]').forEach(b=>{
+    b.onclick = ()=>{
+      const k = b.dataset.set, v = b.dataset.v;
+      if(k === 'lang'){ app.lang = v; }
+      if(k === 'input'){ app.inputType = v; }
+      if(k === 'level'){ app.level = v; }
+      if(k === 'mode'){ app.mode = v; }
+      saveSettings(); render();
+    };
+  });
+  document.querySelectorAll('[data-cat2]').forEach(b=>{
+    b.onclick = ()=>{ app.category = b.dataset.cat2; drawTopic(); };
+  });
+  const r = document.getElementById('redraw');
+  if(r) r.onclick = ()=> drawTopic();
+  const c = document.getElementById('confirmTopic');
+  if(c) c.onclick = ()=>{
+    if(!item) return;
+    app.session = null;
+    app.prepSec = 0;
+    app.searchSec = 0;
+    app.outline = '';
+    app.revealed = false;
+    setView(app.mode === 'retell' ? 'search' : 'prep');
+  };
+}
+
+/* ============================================================
+   计时器
+   ============================================================ */
+let tick = null;
+function clearTick(){ if(tick){ clearInterval(tick); tick = null; } }
+function runTimer(limitSec, handlers, offsetSec){
+  clearTick();
+  const start = Date.now();
+  const offset = offsetSec || 0;
+  const step = ()=>{
+    const elapsed = offset + (Date.now() - start) / 1000;
+    if(limitSec > 0){
+      const left = Math.max(0, limitSec - elapsed);
+      handlers.onTick(left, elapsed, limitSec);
+      if(left <= 0){ clearTick(); handlers.onEnd && handlers.onEnd(elapsed); }
+    } else {
+      handlers.onTick(null, elapsed, 0);
+    }
+  };
+  step();
+  tick = setInterval(step, 200);
+  return start;
+}
+
+/* ============================================================
+   准备阶段
+   ============================================================ */
+app.outline = app.outline || '';
+
+function viewPrep(){
+  const zh = app.lang === 'zh';
+  const item = app.current;
+  const lv = LEVELS[app.level] || LEVELS.standard;
+  const limit = lv.prep || 0;
+  return '' +
+  '<div class="card">' +
+    '<div class="topic-pin">' +
+      '<div class="mark">' + esc(zh?'题目':'Prompt') + '</div>' +
+      '<div class="body"><div class="zh">' + esc(topicText(item)) + '</div>' +
+        (topicAlt(item) ? '<div class="en">' + esc(topicAlt(item)) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="timer-wrap">' +
+      '<div class="timer" id="timer">' + (limit ? fmtClock(limit) : '00:00') + '</div>' +
+      '<div class="timer-label">' + esc(zh?'准备时间 · 列提纲':'Prep time · outline') + '</div>' +
+      '<div class="progress" id="prog"><i style="width:0%"></i></div>' +
+    '</div>' +
+    '<div class="divider"></div>' +
+    '<div class="opt-label" style="margin-bottom:8px"><b>' + esc(zh?'提纲草稿':'Outline') + '</b><span>' + esc(zh?'可选，不会计入评分原文':'optional, not part of the answer') + '</span></div>' +
+    '<textarea class="answer outline" id="outlineBox" placeholder="' + esc(zh?'开头一句 / 两个论点 / 一个例子 / 收尾':'Hook / two points / one example / close') + '">' + esc(app.outline) + '</textarea>' +
+    '<div class="row" style="justify-content:space-between;margin-top:16px">' +
+      '<button class="btn ghost" id="skipPrep">' + esc(zh?'跳过准备':'Skip prep') + '</button>' +
+      '<button class="btn primary" id="toAnswer">' + esc(zh?'开始作答':'Start answering') + ' →</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function bindPrep(){
+  const item = app.current;
+  const lv = LEVELS[app.level] || LEVELS.standard;
+  const limit = lv.prep || 0;
+  const box = document.getElementById('outlineBox');
+  box.oninput = ()=> app.outline = box.value;
+
+  let ended = false;
+  const timerEl = document.getElementById('timer');
+  const progEl = document.getElementById('prog');
+  const startAt = Date.now();
+
+  runTimer(limit, {
+    onTick(left, elapsed, total){
+      timerEl.textContent = left === null ? fmtClock(elapsed) : fmtClock(left);
+      const warn = left !== null && left <= 10;
+      timerEl.classList.toggle('warn', warn);
+      progEl.classList.toggle('warn', warn);
+      progEl.querySelector('i').style.width = (total ? ((total - left) / total) * 100 : 0) + '%';
+    },
+    onEnd(){
+      if(ended) return; ended = true;
+      app.prepSec = Math.round(limit);
+      app.session = null;
+      toast(app.lang==='zh'?'准备时间到，开始作答':'Prep time is up — start answering');
+      setView('answer');
+    }
+  });
+
+  document.getElementById('skipPrep').onclick = ()=>{
+    app.prepSec = Math.round((Date.now() - startAt) / 1000);
+    ended = true;
+    setView('answer');
+  };
+  document.getElementById('toAnswer').onclick = ()=>{
+    app.prepSec = Math.round((Date.now() - startAt) / 1000);
+    ended = true;
+    setView('answer');
+  };
+}
+
+/* ============================================================
+   检索阶段（概念复述）
+   ============================================================ */
+function viewSearch(){
+  const zh = app.lang === 'zh';
+  const item = app.current;
+  const lv = LEVELS[app.level] || LEVELS.standard;
+  const limit = lv.search || 0;
+  const k = app.lang === 'zh' ? item.zh : item.en;
+  const e = app.lang === 'zh' ? item.en : item.zh;
+  return '' +
+  '<div class="card">' +
+    '<div class="concept-card">' +
+      '<div class="d">' + esc(zh?'待复述概念 · ':'Concept · ') + esc(item.dom || '') + '</div>' +
+      '<div class="k">' + esc(k) + '</div>' +
+      (e ? '<div class="e">' + esc(e) + '</div>' : '') +
+      (item.hint ? '<div class="d" style="margin-top:10px">' + esc(zh?'检索提示：':'Hint: ') + esc(item.hint) + '</div>' : '') +
+    '</div>' +
+  '</div>' +
+  '<div class="card">' +
+    '<div class="timer-wrap">' +
+      '<div class="timer" id="timer">' + (limit ? fmtClock(limit) : '00:00') + '</div>' +
+      '<div class="timer-label">' + esc(zh?'自主检索 · 自己上网查':'Research on your own') + '</div>' +
+      '<div class="progress" id="prog"><i style="width:0%"></i></div>' +
+    '</div>' +
+    '<p class="hint-line" style="text-align:center;margin-top:10px">' +
+      esc(zh?'系统不抓取、不提供现成材料。整理成三段：它是什么 / 为什么重要 / 一个例子。':'The app never fetches material. Shape it into three beats: what it is / why it matters / one example.') +
+    '</p>' +
+    '<div class="divider"></div>' +
+    '<div class="row" style="justify-content:space-between">' +
+      '<span class="tiny muted">' + esc(zh?'开始复述后概念名会收起，可回看 1 次':'The name hides once you start; one peek allowed') + '</span>' +
+      '<button class="btn primary" id="doneSearch">' + esc(zh?'我已整理好，开始复述':'I\u2019m ready — start retelling') + ' →</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function bindSearch(){
+  const lv = LEVELS[app.level] || LEVELS.standard;
+  const limit = lv.search || 0;
+  const startAt = Date.now();
+  const timerEl = document.getElementById('timer');
+  const progEl = document.getElementById('prog');
+  runTimer(limit, {
+    onTick(left, elapsed, total){
+      timerEl.textContent = left === null ? fmtClock(elapsed) : fmtClock(left);
+      const warn = left !== null && left <= 10;
+      timerEl.classList.toggle('warn', warn);
+      progEl.classList.toggle('warn', warn);
+      progEl.querySelector('i').style.width = (total ? ((total - left) / total) * 100 : 0) + '%';
+    }
+  });
+  document.getElementById('doneSearch').onclick = ()=>{
+    app.searchSec = Math.round((Date.now() - startAt) / 1000);
+    clearTick();
+    setView('answer');
+  };
+}
+
+/* ============================================================
+   作答阶段
+   ============================================================ */
+let answerStartAt = 0;
+let answerElapsed = 0;
+let submitted = false;
+
+function ensureSession(){
+  const item = app.current;
+  const lv = LEVELS[app.level] || LEVELS.standard;
+  const limit = app.mode === 'retell' ? (lv.retell || 0) : (lv.answer || 0);
+  if(!app.session){
+    app.session = {
+      id: uid(),
+      createdAt: new Date().toISOString(),
+      language: app.lang,
+      mode: app.mode,
+      topic: topicText(item),
+      topicAlt: topicAlt(item),
+      category: item.custom ? 'custom' : (item.concept ? (item.dom || 'concept') : item.cat),
+      isCustomTopic: !!item.custom,
+      isConcept: !!item.concept,
+      inputType: app.inputType,
+      level: app.level,
+      timing:{ prepareSec: app.prepSec || 0, searchSec: app.searchSec || 0, answerSec: 0, totalSec: 0 },
+      content:{ text: '', wordCount: 0 },
+      review: null,
+      scored: false,
+      aiMeta:{ model:'', scoredAt:'' },
+      recall:{ used: 0, allowed: 1 },
+      limit,
+      _startAt: Date.now()
+    };
+  }
+  app.session.inputType = app.inputType;
+  app.session.language = app.lang;
+  return app.session;
+}
+
+function viewAnswer(){
+  const zh = app.lang === 'zh';
+  const s = ensureSession();
+  const item = app.current;
+  const limit = s.limit || 0;
+  const isRetell = s.mode === 'retell';
+  const conceptCls = isRetell && !app.revealed ? 'concealed' : '';
+  return '' +
+  '<div class="card">' +
+    '<div class="spread">' +
+      '<span class="pill accent">' + esc(isRetell ? (zh?'复述作答':'Retelling') : (zh?'即兴作答':'Impromptu answer')) + '</span>' +
+      '<span class="pill mono">' + (limit ? fmtClock(limit) + ' · ' + esc(LEVELS[app.level][app.lang]) : esc(zh?'不限时':'untimed')) + '</span>' +
+    '</div>' +
+    '<div class="timer-wrap" style="margin-top:12px">' +
+      '<div class="timer" id="timer">' + (limit ? fmtClock(limit) : '00:00') + '</div>' +
+      '<div class="timer-label">' + esc(zh?'作答剩余':'Remaining') + '</div>' +
+      '<div class="progress" id="prog"><i style="width:0%"></i></div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="topic-pin">' +
+    '<div class="mark">' + esc(isRetell ? (zh?'概念':'Concept') : (zh?'题目':'Prompt')) + '</div>' +
+    '<div class="body">' +
+      '<div class="zh ' + conceptCls + '" id="topicBody">' + esc(topicText(item)) + '</div>' +
+      (!isRetell && topicAlt(item) ? '<div class="en">' + esc(topicAlt(item)) + '</div>' : '') +
+      (isRetell ? '<div class="tiny muted" style="margin-top:6px">' + esc(zh?'已回看 ':'Peeked ') + s.recall.used + '/' + s.recall.allowed + '</div>' : '') +
+    '</div>' +
+    (isRetell ? '<button class="btn sm ghost" id="peek" ' + (s.recall.used >= s.recall.allowed ? 'disabled' : '') + '>' + esc(zh?'短暂回看':'Peek') + '</button>' : '') +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="row" style="justify-content:space-between;margin-bottom:12px">' +
+      '<div class="chips">' +
+        '<button class="chip ' + (s.inputType==='voice'?'on':'') + '" data-input="voice" ' + (supportsVoice()?'':'disabled style="opacity:.45"') + '>' + esc(zh?'语音演讲':'Voice') + '</button>' +
+        '<button class="chip ' + (s.inputType==='text'?'on':'') + '" data-input="text">' + esc(zh?'文本写作':'Text') + '</button>' +
+      '</div>' +
+      '<span class="tiny muted" id="liveMeta">' + countWords(s.content.text, s.language) + ' ' + esc(s.language==='en'?(zh?'词':'words'):(zh?'字':'chars')) + '</span>' +
+    '</div>' +
+
+    '<textarea class="answer" id="answerText" placeholder="' + esc(zh?'在这里作答；语音模式会实时转写，可直接修改识别错误。':'Type here — voice mode transcribes live and you can fix it.') + '">' + esc(s.content.text) + '</textarea>' +
+
+    (s.inputType === 'voice'
+      ? '<div class="voice-zone">' +
+          '<button class="mic" id="micBtn">' + ICON.mic + '</button>' +
+          '<div style="flex:1">' +
+            '<div class="row" style="gap:10px">' +
+              '<span class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i></span>' +
+              '<span class="small" id="voiceStatus">' + esc(zh?'点击麦克风开始':'Tap the mic to start') + '</span>' +
+            '</div>' +
+            '<p class="hint-line" style="margin-top:4px">' + esc(supportsVoice() ? (zh?'支持开始 / 暂停 / 结束；仅保存转写文本与时长。':'Start / pause / stop; only the transcript and duration are saved.') : (zh?'当前浏览器不支持语音识别，请使用文本输入。':'Speech recognition is unavailable here — use text.')) + '</p>' +
+          '</div>' +
+        '</div>'
+      : '') +
+
+    '<div class="answer-meta">' +
+      '<span id="metaTime">' + esc(zh?'已用 0 秒':'0s elapsed') + '</span>' +
+      '<span>' + esc(zh?'目标时长 ':'Target ') + (limit ? fmtDuration(limit) : esc(zh?'不限':'none')) + '</span>' +
+      '<span>' + esc(zh?'题面全程可见':'Prompt stays visible') + '</span>' +
+    '</div>' +
+    '<div class="divider"></div>' +
+    '<div class="row" style="justify-content:space-between">' +
+      '<span class="tiny muted">' + esc(zh?'提交后原文与评分只存本地':'Saved locally only') + '</span>' +
+      '<button class="btn primary" id="submitBtn">' + esc(zh?'提交并评分':'Submit & score') + ' →</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function bindAnswer(){
+  const s = ensureSession();
+  const limit = s.limit || 0;
+  const ta = document.getElementById('answerText');
+  const timerEl = document.getElementById('timer');
+  const progEl = document.getElementById('prog');
+  const metaTime = document.getElementById('metaTime');
+  const liveMeta = document.getElementById('liveMeta');
+  submitted = false;
+
+  ta.oninput = ()=>{
+    s.content.text = ta.value;
+    s.content.wordCount = countWords(ta.value, s.language);
+    liveMeta.textContent = countWords(ta.value, s.language) + ' ' + (s.language==='en'?(app.lang==='zh'?'词':'words'):(app.lang==='zh'?'字':'chars'));
+  };
+  ta.focus();
+
+  document.querySelectorAll('[data-input]').forEach(b=>{
+    b.onclick = ()=>{
+      s.content.text = ta.value;
+      app.inputType = b.dataset.input;
+      settings.defaultInputType = app.inputType;
+      saveSettings();
+      stopVoice(true);
+      render();
+    };
+  });
+
+  const peek = document.getElementById('peek');
+  if(peek) peek.onclick = ()=>{
+    if(s.recall.used >= s.recall.allowed) return;
+    s.recall.used++;
+    app.revealed = true;
+    const body = document.getElementById('topicBody');
+    body.classList.remove('concealed');
+    setTimeout(()=>{
+      app.revealed = false;
+      const b2 = document.getElementById('topicBody');
+      if(b2) b2.classList.add('concealed');
+      render();
+    }, 6000);
+    toast(app.lang==='zh'?'概念名显示 6 秒':'Concept shown for 6 seconds');
+  };
+
+  const startAt = s._startAt || (s._startAt = Date.now());
+  answerStartAt = startAt;
+  const already = Math.max(0, (Date.now() - startAt) / 1000);
+  runTimer(limit, {
+    onTick(left, elapsed, total){
+      answerElapsed = elapsed;
+      timerEl.textContent = left === null ? fmtClock(elapsed) : fmtClock(left);
+      const warn = left !== null && left <= 10;
+      timerEl.classList.toggle('warn', warn);
+      progEl.classList.toggle('warn', warn);
+      progEl.querySelector('i').style.width = (total ? ((total - left) / total) * 100 : 0) + '%';
+      metaTime.textContent = (app.lang==='zh'?'已用 ':'Elapsed ') + fmtDuration(elapsed);
+    },
+    onEnd(elapsed){
+      answerElapsed = elapsed;
+      if(submitted) return;
+      toast(app.lang==='zh'?'时间到，自动提交':'Time is up — submitting');
+      submitAnswer(true);
+    }
+  }, already);
+
+  const btn = document.getElementById('submitBtn');
+  btn.onclick = ()=> submitAnswer(false);
+
+  if(s.inputType === 'voice') bindVoice(ta, s);
+}
+
+/* ---------- 语音识别 ---------- */
+let rec = null, recState = 'idle', voiceBase = '', voiceFinal = '', voiceInterim = '', restarts = 0;
+
+function bindVoice(ta, s){
+  const btn = document.getElementById('micBtn');
+  const wave = document.getElementById('wave');
+  const status = document.getElementById('voiceStatus');
+
+  btn.onclick = ()=>{
+    if(recState === 'idle') startRec();
+    else if(recState === 'recording') pauseRec();
+    else if(recState === 'paused') resumeRec();
+  };
+
+  function setUI(){
+    btn.classList.toggle('on', recState === 'recording');
+    wave.classList.toggle('on', recState === 'recording');
+    const zh = app.lang === 'zh';
+    status.textContent = recState === 'recording' ? (zh?'正在识别…（再次点击暂停）':'Listening… (tap to pause)')
+      : recState === 'paused' ? (zh?'已暂停，点击继续':'Paused — tap to resume')
+      : (zh?'点击麦克风开始':'Tap the mic to start');
+  }
+
+  function newRec(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ toast(app.lang==='zh'?'浏览器不支持语音识别':'Speech recognition unavailable'); return null; }
+    const r = new SR();
+    r.lang = s.language === 'en' ? 'en-US' : 'zh-CN';
+    r.continuous = true;
+    r.interimResults = true;
+    r.maxAlternatives = 1;
+    r.onresult = (e)=>{
+      let interim = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        const res = e.results[i];
+        if(res.isFinal) voiceFinal += res[0].transcript;
+        else interim += res[0].transcript;
+      }
+      voiceInterim = interim;
+      ta.value = voiceBase + voiceFinal + interim;
+      s.content.text = ta.value;
+      s.content.wordCount = countWords(ta.value, s.language);
+      const lm = document.getElementById('liveMeta');
+      if(lm) lm.textContent = s.content.wordCount + ' ' + (s.language==='en'?(app.lang==='zh'?'词':'words'):(app.lang==='zh'?'字':'chars'));
+    };
+    r.onerror = (e)=>{
+      if(e.error === 'no-speech') return;
+      const zh = app.lang === 'zh';
+      if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+        recState = 'idle'; setUI();
+        toast(zh?'麦克风权限被拒绝，可改用文本':'Mic permission denied — use text');
+      } else if(e.error === 'network'){
+        recState = 'idle'; setUI();
+        toast(zh?'语音识别连不上网络，可改用文本':'Speech service unreachable — use text');
+      }
+    };
+    r.onend = ()=>{
+      if(recState === 'recording'){
+        restarts++;
+        try{ r.start(); }catch(err){ recState='idle'; setUI(); }
+      }
+    };
+    return r;
+  }
+
+  function startRec(){
+    rec = newRec();
+    if(!rec) return;
+    voiceBase = (ta.value ? ta.value.replace(/\s+$/,'') + ' ' : '');
+    voiceFinal = ''; voiceInterim = ''; restarts = 0;
+    recState = 'recording';
+    try{ rec.start(); }catch(e){ recState='idle'; }
+    setUI();
+  }
+  function pauseRec(){
+    recState = 'paused';
+    try{ rec && rec.stop(); }catch(e){}
+    setUI();
+  }
+  function resumeRec(){
+    voiceBase = ta.value.replace(/\s+$/,'') + ' ';
+    voiceFinal = ''; voiceInterim = '';
+    rec = newRec();
+    if(!rec){ recState='idle'; setUI(); return; }
+    recState = 'recording';
+    try{ rec.start(); }catch(e){ recState='idle'; }
+    setUI();
+  }
+  window.__setVoiceUI = setUI;
+  setUI();
+}
+
+function stopVoice(silent){
+  try{ if(rec) rec.stop(); }catch(e){}
+  rec = null;
+  if(recState !== 'idle'){
+    recState = 'idle';
+    if(window.__setVoiceUI) window.__setVoiceUI();
+  }
+}
+
+/* ============================================================
+   提交
+   ============================================================ */
+function submitAnswer(auto){
+  const s = app.session;
+  if(!s || submitted) return;
+  const ta = document.getElementById('answerText');
+  if(ta) s.content.text = ta.value;
+  const text = (s.content.text || '').trim();
+  if(!text){
+    if(auto){ toast(app.lang==='zh'?'没有内容，先写一句':'Nothing to submit yet'); return; }
+    toast(app.lang==='zh'?'先写或说一点内容再提交':'Add something before submitting');
+    return;
+  }
+  submitted = true;
+  stopVoice(true);
+  clearTick();
+  s.timing.answerSec = Math.round(answerElapsed || ((Date.now() - answerStartAt) / 1000));
+  s.timing.totalSec = (s.timing.prepareSec || 0) + (s.timing.searchSec || 0) + s.timing.answerSec;
+  s.content.text = text;
+  s.content.wordCount = countWords(text, s.language);
+  s.content.fillers = countFillers(text, s.language);
+  s.content.pauses = restarts;
+
+  const existing = sessions.findIndex(x=>x.id === s.id);
+  if(existing >= 0) sessions[existing] = s; else sessions.unshift(s);
+  saveSessions();
+  app.session = s;
+  setView('result', {scoring:true});
+  scoreSession(s);
+}
+
+function countFillers(text, lang){
+  if(!text) return 0;
+  if(lang === 'en'){
+    const m = text.toLowerCase().match(/\b(um|uh|er|like|you know|actually|basically|sort of|kind of|i mean)\b/g);
+    return m ? m.length : 0;
+  }
+  const m = text.match(/嗯+|呃+|那个|就是说|然后呢|其实吧|怎么说呢/g);
+  return m ? m.length : 0;
+}
+
+/* ============================================================
+   评分：AI 优先，本地规则降级
+   ============================================================ */
+const DIM_NAMES = {
+  enSpeak:[
+    {key:'fluency', zh:'流利与连贯', en:'Fluency & Coherence'},
+    {key:'lexical', zh:'词汇丰富度', en:'Lexical Resource'},
+    {key:'grammar', zh:'语法广度与准确度', en:'Grammatical Range & Accuracy'},
+    {key:'pronunciation', zh:'发音（弱评分）', en:'Pronunciation (weak)'},
+  ],
+  enWrite:[
+    {key:'task', zh:'任务回应', en:'Task Response'},
+    {key:'coherence', zh:'连贯与衔接', en:'Coherence & Cohesion'},
+    {key:'lexical', zh:'词汇丰富度', en:'Lexical Resource'},
+    {key:'grammar', zh:'语法广度与准确度', en:'Grammatical Range & Accuracy'},
+  ],
+  zhSpeak:[
+    {key:'relevance', zh:'扣题与观点', en:'Relevance & stance'},
+    {key:'structure', zh:'结构与逻辑', en:'Structure & logic'},
+    {key:'support', zh:'内容支撑', en:'Evidence'},
+    {key:'language', zh:'语言表达', en:'Language'},
+    {key:'presence', zh:'表达仪态（弱评分）', en:'Presence (weak)'},
+  ],
+  zhWrite:[
+    {key:'relevance', zh:'扣题与观点', en:'Relevance & stance'},
+    {key:'structure', zh:'结构与逻辑', en:'Structure & logic'},
+    {key:'support', zh:'内容支撑', en:'Evidence'},
+    {key:'language', zh:'语言表达', en:'Language'},
+  ],
+  retell:[
+    {key:'coverage', zh:'要点覆盖', en:'Coverage'},
+    {key:'terms', zh:'术语准确', en:'Terminology'},
+    {key:'paraphrase', zh:'转述能力', en:'Paraphrase'},
+    {key:'structure', zh:'逻辑结构', en:'Structure'},
+    {key:'language', zh:'语言表达', en:'Language'},
+  ],
+};
+
+function dimSet(session){
+  if(session.mode === 'retell') return DIM_NAMES.retell;
+  if(session.language === 'en') return session.inputType === 'voice' ? DIM_NAMES.enSpeak : DIM_NAMES.enWrite;
+  return session.inputType === 'voice' ? DIM_NAMES.zhSpeak : DIM_NAMES.zhWrite;
+}
+
+const RUBRIC = {
+  enSpeak:'流利与连贯（语速、停顿、衔接、连贯）；词汇丰富度（准确、话题词、搭配、避免重复）；语法广度与准确度（句式多样、时态从句、错误频率）；发音仅基于转写可懂度弱评分，需提示录音回听。',
+  enWrite:'任务回应（扣题、观点、论证展开、例证）；连贯与衔接（段落、逻辑顺序、衔接手段）；词汇丰富度（恰当、搭配、语体、拼写）；语法广度与准确度（句式、错误、标点）。',
+  zhSpeak:'扣题与观点（是否回应题目、立场清晰）；结构与逻辑（开头—展开—结尾、层次、顺序）；内容支撑（例子、数据、理由）；语言表达（准确简洁、口头禅与冗余）；表达仪态仅基于转写弱推断（语速、停顿、自信度）。',
+  zhWrite:'扣题与观点；结构与逻辑；内容支撑；语言表达（准确简洁、书面语体、冗余）。',
+  retell:'要点覆盖（定义、关键要点是否讲全）；术语准确；转述能力（是否用自己的话重组而非照搬）；逻辑结构；语言表达。',
+};
+
+function rubricFor(s){
+  if(s.mode === 'retell') return RUBRIC.retell;
+  if(s.language === 'en') return s.inputType === 'voice' ? RUBRIC.enSpeak : RUBRIC.enWrite;
+  return s.inputType === 'voice' ? RUBRIC.zhSpeak : RUBRIC.zhWrite;
+}
+
+function aiEndpoint(){
+  let url = (settings.ai.endpoint || '').trim().replace(/\/+$/, '');
+  if(!url) return '';
+  if(!/\/chat\/completions(\?|$)/.test(url)){
+    url += /\/v1$/.test(url) ? '/chat/completions' : '/v1/chat/completions';
+  }
+  return url;
+}
+
+async function callAI(s){
+  const ai = settings.ai;
+  const url = aiEndpoint();
+  if(!url || !ai.model) throw new Error('AI not configured');
+  const dims = dimSet(s);
+  const max = s.language === 'en' ? 9 : 5;
+  const sys = [
+    '你是一位严谨的双语表达考官，同时熟悉雅思口语/写作评分与结构化面试表达评估。',
+    '只输出一个 JSON 对象，不要任何解释、Markdown 或代码块。',
+    '评语、亮点、改进点、错误说明都用「作答语言」（' + (s.language==='en'?'English':'中文') + '）书写。',
+    '分项满分 ' + max + '。总分即各分项平均分。',
+    '错误清单必须引用原文片段（excerpt 为原文逐字摘录），类别只能取：语法错误、用词不当、搭配错误、表达不地道/中式、逻辑与结构问题、扣题偏差、拼写/标点、口头禅与停顿（语音）、术语错误（复述）、内容缺失（复述）。',
+    'JSON 结构：{"overall":number,"band":string,"dimensions":[{"key":string,"name":string,"score":number,"max":number,"comment":string}],"strengths":[string],"improvements":[string],"errors":[{"category":string,"excerpt":string,"issue":string,"suggestion":string}],"retellCoverage":{"keyPoints":number,"totalKeyPoints":number}}',
+    '待评分项（必须逐项使用这些 key 与中文名）：' + dims.map(d=>d.key + '/' + d.zh).join('，'),
+    '评分口径：' + rubricFor(s),
+  ].join('\n');
+  const payload = {
+    language: s.language, mode: s.mode, inputType: s.inputType, level: s.level,
+    topic: s.topic, concept: s.isConcept ? s.topic : undefined,
+    content: s.content.text,
+    timing: { prepareSec: s.timing.prepareSec, searchSec: s.timing.searchSec, answerSec: s.timing.answerSec },
+    wordCount: s.content.wordCount,
+    fillers: s.content.fillers,
+    rubric: rubricFor(s)
+  };
+  const ctrl = new AbortController();
+  const to = setTimeout(()=> ctrl.abort(), 60000);
+  let res;
+  try{
+    res = await fetch(url, {
+      method:'POST',
+      headers: Object.assign({'Content-Type':'application/json'}, ai.apiKey ? {'Authorization':'Bearer ' + ai.apiKey} : {}),
+      body: JSON.stringify({
+        model: ai.model,
+        temperature: 0.2,
+        messages:[{role:'system', content:sys},{role:'user', content:JSON.stringify(payload)}]
+      }),
+      signal: ctrl.signal
+    });
+  } finally { clearTimeout(to); }
+  if(!res.ok){
+    const txt = await res.text().catch(()=> '');
+    throw new Error('HTTP ' + res.status + ' ' + txt.slice(0, 140));
+  }
+  const data = await res.json();
+  const raw = (data.choices && data.choices[0] && (data.choices[0].message ? data.choices[0].message.content : data.choices[0].text)) || '';
+  const parsed = extractJSON(raw);
+  if(!parsed) throw new Error('AI 返回内容无法解析为 JSON');
+  return normalizeReview(parsed, s);
+}
+
+function extractJSON(raw){
+  if(!raw) return null;
+  if(typeof raw === 'object') return raw;
+  let txt = String(raw).trim();
+  txt = txt.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  try{ return JSON.parse(txt); }catch(e){}
+  const a = txt.indexOf('{'), b = txt.lastIndexOf('}');
+  if(a >= 0 && b > a){
+    try{ return JSON.parse(txt.slice(a, b+1)); }catch(e){}
+  }
+  return null;
+}
+
+function normalizeReview(r, s){
+  const dims = dimSet(s);
+  const max = s.language === 'en' ? 9 : 5;
+  const byKey = {};
+  (Array.isArray(r.dimensions) ? r.dimensions : []).forEach(d=>{ if(d && d.key) byKey[d.key] = d; });
+  const dimensions = dims.map((d, i)=>{
+    const src = byKey[d.key] || (Array.isArray(r.dimensions) ? r.dimensions[i] : null) || {};
+    return {
+      key: d.key,
+      name: d[app.lang] || d.zh,
+      score: clamp(Number(src.score) || 0, 0, max),
+      max: max,
+      comment: String(src.comment || '').slice(0, 400)
+    };
+  });
+  const avg = dimensions.filter(d=>d.score > 0).length
+    ? dimensions.reduce((a,d)=> a + d.score, 0) / dimensions.length : (Number(r.overall) || 0);
+  const overall = s.language === 'en' ? round1(Math.round(avg * 2) / 2) : round1(avg);
+  return {
+    overall: clamp(overall, 0, max),
+    band: String(r.band || bandFor(s.language, overall)),
+    dimensions,
+    strengths: (Array.isArray(r.strengths) ? r.strengths : []).map(x=>String(x)).filter(Boolean).slice(0, 5),
+    improvements: (Array.isArray(r.improvements) ? r.improvements : []).map(x=>String(x)).filter(Boolean).slice(0, 5),
+    errors: (Array.isArray(r.errors) ? r.errors : []).filter(e=>e && (e.issue || e.suggestion)).map(e=>({
+      category: String(e.category || (s.language==='en'?'Grammar':'语言表达')),
+      excerpt: String(e.excerpt || ''),
+      issue: String(e.issue || ''),
+      suggestion: String(e.suggestion || '')
+    })).slice(0, 12),
+    retellCoverage: r.retellCoverage || null
+  };
+}
+
+function bandFor(lang, overall){
+  if(lang === 'en') return overall.toFixed(1);
+  if(overall >= 4.2) return '优秀';
+  if(overall >= 3.4) return '良好';
+  if(overall >= 2.6) return '合格';
+  return '待提高';
+}
+
+/* ---------- 本地规则估算 ---------- */
+const EN_CONN = ['however','moreover','therefore','because','although','while','firstly','secondly','finally','in addition','for example','as a result','on the other hand','that said','in conclusion'];
+const ZH_CONN = ['首先','其次','再次','最后','因此','所以','但是','然而','此外','另外','一方面','另一方面','总之','例如','比如','换句话说','总结'];
+
+function analyzeEN(text){
+  const low = text.toLowerCase();
+  const tokens = low.match(/[a-z][a-z''-]*/g) || [];
+  const uniq = new Set(tokens);
+  const sentences = text.split(/[.!?]+/).map(x=>x.trim()).filter(x=>x.length > 1);
+  const avgLen = sentences.length ? tokens.length / sentences.length : tokens.length;
+  const connectors = EN_CONN.filter(c=> low.indexOf(c) >= 0).length;
+  const fillers = (low.match(/\b(um|uh|er|like|you know|actually|basically|sort of|kind of|i mean)\b/g) || []).length;
+  const errors = [];
+  const sentOf = (idx)=>{
+    const before = text.slice(0, idx);
+    const s = before.lastIndexOf('.');
+    const e = text.slice(idx).search(/[.!?]/);
+    return text.slice(s + 1, e >= 0 ? idx + e + 1 : Math.min(text.length, idx + 60)).trim();
+  };
+  const probes = [
+    {re:/\ba\s+[aeiouAEIOU]\w+/g, cat:'语法错误', issue:'冠词 a/an 使用不当', sug:'元音音素前用 an，辅音前用 a。'},
+    {re:/\bcan\s+to\s+[a-z]+/gi, cat:'语法错误', issue:'情态动词后误加 to', sug:'can/could/should 后直接接动词原形。'},
+    {re:/\b(\w+)\s+\1\b/gi, cat:'口头禅与停顿（语音）', issue:'同一词连续重复', sug:'删掉重复词，保持流畅。'},
+    {re:/(^|[.!?]\s+)i\b/g, cat:'拼写/标点', issue:'第一人称代词未大写', sug:'句首与指代自己时统一用大写 I。'},
+    {re:/\bmore better\b|\bmost easiest\b/gi, cat:'语法错误', issue:'比较级重复叠加', sug:'better / easiest 本身已是比较级或最高级。'},
+  ];
+  probes.forEach(p=>{
+    const m = text.match(p.re);
+    if(m && m.length){
+      errors.push({category:p.cat, excerpt:sentOf(Math.max(0, text.indexOf(m[0].replace(/^[.!?]\s+/, '')))), issue:p.issue, suggestion:p.sug});
+    }
+  });
+  return {tokens:tokens.length, unique:uniq.size, ttr: tokens.length ? uniq.size / tokens.length : 0,
+    sentences: sentences.length, avgLen, connectors, fillers, errors};
+}
+
+function analyzeZH(text){
+  const chars = text.replace(/\s+/g, '');
+  const sentences = text.split(/[。！？!?\n]+/).map(x=>x.trim()).filter(x=>x.length > 1);
+  const connectors = ZH_CONN.reduce((a,c)=> a + (text.split(c).length - 1), 0);
+  const fillers = (text.match(/嗯+|呃+|那个|就是说|然后呢|其实吧|怎么说呢/g) || []).length;
+  const numbers = (text.match(/\d+|百分之|成|年|倍/g) || []).length;
+  const examples = (text.match(/例如|比如|举个例子|举个例子说|譬如|以.{0,6}为例|研究表明|数据显示/g) || []).length;
+  const errors = [];
+  if(fillers >= 3) errors.push({category:'口头禅与停顿（语音）', excerpt: text.slice(0, 40), issue:'口头禅偏多（约 ' + fillers + ' 次）', suggestion:'每句话前先想好主语和动词，用停半拍代替「嗯、那个、就是说」。'});
+  const rep = text.match(/(.{2,6})\1{2,}/);
+  if(rep) errors.push({category:'逻辑与结构问题', excerpt: rep[0].slice(0, 40), issue:'同一表述连续重复', suggestion:'删掉重复段落，改用分点推进。'});
+  return {chars: chars.length, sentences: sentences.length, connectors, fillers, numbers, examples, errors};
+}
+
+function relevantChars(topic){
+  const stop = new Set('的是了在和与或也就都很更把被让对为上有下这那你我他她它们吗呢吧什如何么要会能可应该否一个中'.split(''));
+  const set = new Set();
+  (topic || '').replace(/\s+/g, '').split('').forEach(ch=>{
+    if(!stop.has(ch) && /[\u4e00-\u9fa5]/.test(ch)) set.add(ch);
+  });
+  return Array.from(set);
+}
+
+function keywordOverlap(text, topic){
+  if(text && text.length > 6 && /[A-Za-z]/.test(text)){
+    const words = new Set((text.toLowerCase().match(/[a-z]{4,}/g) || []));
+    const keys = (topic.toLowerCase().match(/[a-z]{4,}/g) || []).filter(w=> w.length > 3);
+    if(!keys.length) return 0.5;
+    return keys.filter(k=> words.has(k)).length / keys.length;
+  }
+  const chars = relevantChars(topic);
+  if(!chars.length) return 0.5;
+  const hit = chars.filter(c=> text.indexOf(c) >= 0).length;
+  return hit / chars.length;
+}
+
+function localScore(s){
+  const text = (s.content.text || '').trim();
+  const isEN = s.language === 'en';
+  const max = isEN ? 9 : 5;
+  const dims = dimSet(s);
+  const scores = {};
+  const notes = {};
+  let metrics;
+
+  if(isEN){
+    const a = analyzeEN(text);
+    metrics = a;
+    const lenAdequate = s.mode === 'retell' ? 90 : (s.inputType === 'voice' ? 120 : 180);
+    const cover = keywordOverlap(text, s.topic);
+    if(s.mode === 'retell'){
+      scores.coverage = clamp(1 + (a.tokens / lenAdequate) * 5 + cover * 2, 1, 9);
+      scores.terms = clamp(2.2 + cover * 5 + (a.ttr > .55 ? .8 : .2), 1, 9);
+      scores.paraphrase = clamp(7.5 - (text.match(/[""「」]/g) || []).length * 0.6 - (text.match(/according to|research shows|the article/gi) || []).length * 0.5, 1, 9);
+      scores.structure = clamp(2 + Math.min(4, a.connectors * 0.8) + (a.sentences >= 4 ? 1.6 : 0) + (a.avgLen > 25 ? -0.6 : 0), 1, 9);
+      scores.language = clamp(2 + Math.min(3, a.ttr * 3) + Math.min(2.4, a.tokens / 45) - Math.min(1.8, a.fillers * 0.18), 1, 9);
+      notes.coverage = '按篇幅与题面关键词重合度粗估。';
+      notes.terms = '按概念词出现与用词多样性粗估。';
+      notes.paraphrase = '引用/复述痕迹越多得分越低。';
+      notes.structure = '按衔接词与句子数量粗估。';
+      notes.language = '按词汇多样性与篇幅粗估。';
+    } else if(s.inputType === 'voice'){
+      scores.fluency = clamp(2.6 + Math.min(2.4, a.connectors * 0.45) + (a.avgLen >= 8 ? 1.1 : 0.4) - Math.min(2, a.fillers * 0.28), 1, 9);
+      scores.lexical = clamp(2.4 + Math.min(3.2, a.ttr * 4) + Math.min(2.2, a.tokens / 55), 1, 9);
+      scores.grammar = clamp(6.4 - a.errors.filter(e=>e.category==='语法错误').length * 0.65 + Math.min(1.6, a.sentences / 6), 1, 9);
+      scores.pronunciation = 5.5;
+      notes.fluency = '语速整理自转写长度与衔接词，停顿仅能弱推断。';
+      notes.lexical = '按词汇多样性与篇幅估算。';
+      notes.grammar = '按常见错误模式与句数估算。';
+      notes.pronunciation = '转写无法评估发音细节，建议录音回听。';
+    } else {
+      scores.task = clamp(2 + cover * 3 + Math.min(2.6, a.tokens / 80) + Math.min(1.2, a.sentences / 6), 1, 9);
+      scores.coherence = clamp(2 + Math.min(3.6, a.connectors * 0.75) + (a.sentences >= 5 ? 1.4 : 0.5), 1, 9);
+      scores.lexical = clamp(2.4 + Math.min(3.2, a.ttr * 4) + Math.min(2.2, a.tokens / 60), 1, 9);
+      scores.grammar = clamp(6.6 - a.errors.filter(e=>e.category==='语法错误').length * 0.7 + Math.min(1.4, a.sentences / 7), 1, 9);
+      notes.task = '按扣题关键词与论证篇幅估算。';
+      notes.coherence = '按衔接词与段落句数估算。';
+      notes.lexical = '按词汇多样性估算。';
+      notes.grammar = '按常见错误模式估算。';
+    }
+  } else {
+    const a = analyzeZH(text);
+    metrics = a;
+    const adequacy = s.mode === 'retell' ? 220 : 320;
+    const cover = keywordOverlap(text, s.topic);
+    const stance = /我认为|我觉得|在我看来|应当|不应|应该|不应该|立场|主张/.test(text) ? 0.5 : 0;
+    if(s.mode === 'retell'){
+      scores.coverage = clamp(1.4 + Math.min(3, a.chars / adequacy * 3) + cover * 1.4, 1, 5);
+      scores.terms = clamp(1.6 + cover * 2.6 + (text.indexOf(s.topic.slice(0,2)) >= 0 ? 0.6 : 0), 1, 5);
+      scores.paraphrase = clamp(4.2 - (text.match(/「|」|“|”|根据资料|资料显示/g) || []).length * 0.5, 1, 5);
+      scores.structure = clamp(1.4 + Math.min(2, a.connectors * 0.42) + (a.sentences >= 4 ? 0.9 : 0), 1, 5);
+      scores.language = clamp(1.6 + Math.min(2.2, a.chars / 260 * 2.2) - Math.min(1.4, a.fillers * 0.14), 1, 5);
+      notes.coverage = '按篇幅与题面关键词覆盖粗估。';
+      notes.terms = '按概念名称与领域词使用粗估。';
+      notes.paraphrase = '摘抄式表述会被扣分。';
+      notes.structure = '按衔接词与段落句数粗估。';
+      notes.language = '按篇幅与口头禅密度粗估。';
+    } else {
+      scores.relevance = clamp(1.6 + cover * 2.2 + stance, 1, 5);
+      scores.structure = clamp(1.4 + Math.min(2.2, a.connectors * 0.4) + (a.sentences >= 4 ? 0.9 : 0.3), 1, 5);
+      scores.support = clamp(1.2 + Math.min(1.6, a.examples * 0.7) + Math.min(1.2, a.numbers * 0.3) + Math.min(1.1, a.chars / 300), 1, 5);
+      if(s.inputType === 'voice'){
+        scores.language = clamp(1.8 + Math.min(2, a.chars / 280 * 2) - Math.min(1.4, a.fillers * 0.16), 1, 5);
+        scores.presence = clamp(4.1 - Math.min(1.6, a.fillers * 0.2) + (a.chars > 260 ? 0.4 : 0), 1, 5);
+        notes.presence = '仅凭转写推断语速与停顿，可信度有限。';
+      } else {
+        scores.language = clamp(1.9 + Math.min(2.2, a.chars / 320 * 2.2) - Math.min(1, a.fillers * 0.12), 1, 5);
+      }
+      notes.relevance = '按题面关键词覆盖与立场句估算。';
+      notes.structure = '按衔接词与句子层次估算。';
+      notes.support = '按举例与数据类表达估算。';
+      notes.language = '按篇幅与冗余度估算。';
+    }
+  }
+
+  const dimensions = dims.map(d=>({
+    key:d.key, name:d[app.lang] || d.zh,
+    score: round1(clamp(scores[d.key] || 1, 1, max)),
+    max,
+    comment: notes[d.key] || '基于本地规则估算。'
+  }));
+  const overall = isEN ? round1(Math.round((dimensions.reduce((a,d)=> a + d.score, 0) / dimensions.length) * 2) / 2)
+                       : round1(dimensions.reduce((a,d)=> a + d.score, 0) / dimensions.length);
+
+  /* 亮点 / 改进点 */
+  const strengths = [], improvements = [];
+  const f = (n)=> isEN ? n : n;
+  if(isEN){
+    if(metrics.connectors >= 2) strengths.push('衔接手段有意识使用（约 ' + metrics.connectors + ' 处），逻辑推进可辨。');
+    if(metrics.ttr > 0.5) strengths.push('词汇重复控制得不错（类符/形符比 ' + metrics.ttr.toFixed(2) + '）。');
+    if(metrics.avgLen >= 12) strengths.push('句子有一定长度与展开，不是碎片式表达。');
+    if(metrics.tokens >= 120) strengths.push('内容量足够支撑一次完整作答（约 ' + metrics.tokens + ' 词）。');
+    if(metrics.fillers <= 1) strengths.push('口头禅很少，听感干净。');
+    if(!strengths.length) strengths.push('完成了从抽题到作答的闭环，先稳住流程再谈打磨。');
+    if(metrics.connectors < 2) improvements.push('补衔接：however / therefore / for example 至少各用一次，让段落有骨架。');
+    if(metrics.ttr <= 0.5) improvements.push('换词：把高频词（good, thing, very）替换成更具体的表达。');
+    if(metrics.fillers >= 3) improvements.push('压缩口头禅：用 0.5 秒停顿替代 um / like / you know。');
+    if(metrics.errors.length) improvements.push('优先修掉清单里的 ' + metrics.errors.length + ' 处硬错误，再谈句式多样。');
+    if(metrics.tokens < 90) improvements.push('扩写：每个论点加一个具体例子或数字，避免只有观点。');
+  } else {
+    if(metrics.connectors >= 2) strengths.push('有分点意识，衔接词用了约 ' + metrics.connectors + ' 处。');
+    if(metrics.examples > 0) strengths.push('给出了具体例子，不只是空泛表态。');
+    if(metrics.chars >= 250) strengths.push('内容量够，能撑起一次完整复述/演讲。');
+    if(metrics.fillers <= 1) strengths.push('口头禅控制得不错。');
+    if(!strengths.length) strengths.push('立场基本立住了，下一步把结构做出来。');
+    if(metrics.connectors < 2) improvements.push('加骨架：用「首先 / 其次 / 因此 / 最后」把观点串成三层。');
+    if(metrics.examples === 0) improvements.push('补一个具体例子：时间、地点、数字，任选其一。');
+    if(metrics.fillers >= 3) improvements.push('减少「嗯、那个、就是说」，用停顿代替填充词。');
+    if(metrics.chars < 180) improvements.push('扩写：每个论点至少两句，一句观点一句解释。');
+  }
+
+  const errors = (metrics.errors || []).map(e=>Object.assign({}, e));
+  if(!errors.length && s.content.fillers >= 3){
+    errors.push({category:'口头禅与停顿（语音）', excerpt: text.slice(0, 40), issue:'转写中口头禅出现 ' + s.content.fillers + ' 次', suggestion:'刻意练习「想好再开口」，用停顿替代填充词。'});
+  }
+  if(text.length < (isEN ? 60 : 60)){
+    errors.push({category:'内容缺失（复述）', excerpt:text.slice(0, 40), issue:'篇幅过短，论点没有展开', suggestion:'按「观点—理由—例子—回扣」四步各写一句。'});
+  }
+
+  return {
+    overall, band: bandFor(s.language, overall),
+    dimensions, strengths: strengths.slice(0, 4), improvements: improvements.slice(0, 4),
+    errors: errors.slice(0, 8),
+    retellCoverage: s.mode === 'retell' ? {keyPoints: Math.max(1, Math.round(dimensions[0].score)), totalKeyPoints: max} : null
+  };
+}
+
+/* ---------- 评分入口 ---------- */
+async function scoreSession(s){
+  let review, source = 'local', errMsg = '';
+  const configured = !!(settings.ai.endpoint && settings.ai.model);
+  if(configured){
+    try{
+      review = await callAI(s);
+      source = 'ai';
+    }catch(e){
+      errMsg = e && e.message ? e.message : 'AI 调用失败';
+      review = localScore(s);
+    }
+  } else {
+    review = localScore(s);
+  }
+  s.review = review;
+  s.scored = true;
+  s.aiMeta = {
+    model: source === 'ai' ? settings.ai.model : 'local-rule',
+    scoredAt: new Date().toISOString(),
+    source,
+    error: errMsg
+  };
+  const idx = sessions.findIndex(x=> x.id === s.id);
+  if(idx >= 0) sessions[idx] = s; else sessions.unshift(s);
+  saveSessions();
+  aggregateErrors(s);
+  if(errMsg) toast((app.lang==='zh'?'AI 不可用，已用本地规则估算：':'AI unavailable — local estimate: ') + errMsg.slice(0, 60));
+  if(app.view === 'result') render();
+  if(app.view === 'history' || app.view === 'errors') render();
+}
+
+function aggregateErrors(s){
+  errorBank = errorBank.filter(e=> e.sessionId !== s.id);
+  if(s.review && s.review.errors){
+    s.review.errors.forEach((e, i)=>{
+      errorBank.unshift({
+        id: uid(),
+        sessionId: s.id,
+        language: s.language,
+        mode: s.mode,
+        category: e.category,
+        excerpt: e.excerpt,
+        issue: e.issue,
+        suggestion: e.suggestion,
+        mastered: false,
+        createdAt: s.createdAt
+      });
+    });
+  }
+  saveErrors();
+}
+
+/* ============================================================
+   结果页
+   ============================================================ */
+function currentRecord(){
+  return app.viewData.record || app.session || null;
+}
+
+function viewResult(){
+  const zh = app.lang === 'zh';
+  const s = currentRecord();
+  if(!s) return '<div class="card empty">' + esc(zh?'没有可展示的复盘':'No review to show') + '</div>';
+  if(!s.scored){
+    return '<div class="card"><div class="loading"><div class="spinner"></div>' +
+      '<div class="small muted">' + esc(zh?'正在评分…':'Scoring…') + '</div>' +
+      '<div class="tiny muted">' + esc(settings.ai.endpoint && settings.ai.model ? (zh?'调用你配置的 AI 接口':'Calling your AI endpoint') : (zh?'未配置 AI，使用本地规则估算':'No AI configured — local rule estimate')) + '</div>' +
+      '</div></div>' +
+      '<div class="card flat">' +
+        '<div class="card-head"><h2>' + esc(zh?'作答原文':'Your answer') + '</h2>' +
+          '<span class="right tiny muted">' + s.content.wordCount + ' ' + esc(s.language==='en'?(zh?'词':'words'):(zh?'字':'chars')) + ' · ' + esc(fmtDuration(s.timing.answerSec)) + '</span></div>' +
+        '<p class="small" style="white-space:pre-wrap;line-height:1.75;color:var(--ink-2)">' + esc(s.content.text) + '</p>' +
+        '<div class="divider"></div>' +
+        '<button class="btn" id="rescore">' + esc(zh?'重新评分':'Rescore') + '</button>' +
+      '</div>';
+  }
+
+  const r = s.review;
+  const isEN = s.language === 'en';
+  const max = isEN ? 9 : 5;
+  const srcLabel = s.aiMeta && s.aiMeta.source === 'ai'
+    ? (zh?'AI 评分 · ':'AI · ') + esc(s.aiMeta.model)
+    : (zh?'本地规则估算':'Local rule estimate');
+  const modeLabel = s.mode === 'retell' ? (zh?'概念复述':'Retell') : (zh?'即兴演讲':'Impromptu');
+  const inputLabel = s.inputType === 'voice' ? (zh?'语音':'Voice') : (zh?'文本':'Text');
+
+  return '' +
+  '<div class="card">' +
+    '<div class="score-hero">' +
+      '<div>' +
+        '<div class="score-big">' + (isEN ? r.overall.toFixed(1) : r.overall.toFixed(1)) + '<small>/ ' + max + '</small></div>' +
+        '<div style="margin-top:10px"><span class="band">' + esc(r.band) + '</span></div>' +
+      '</div>' +
+      '<div style="flex:1;min-width:200px">' +
+        '<div class="small" style="font-weight:600;line-height:1.5">' + esc(s.topic) + '</div>' +
+        '<div class="row" style="margin-top:8px">' +
+          '<span class="pill">' + esc(isEN?'EN':'中文') + '</span>' +
+          '<span class="pill">' + esc(modeLabel) + '</span>' +
+          '<span class="pill">' + esc(inputLabel) + '</span>' +
+          '<span class="pill mono">' + esc(fmtDuration(s.timing.totalSec)) + '</span>' +
+        '</div>' +
+        '<div class="tiny muted" style="margin-top:8px">' + esc(fmtDate(s.createdAt)) + ' · ' + srcLabel + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="divider"></div>' +
+    '<div class="grid-2" style="align-items:center">' +
+      '<canvas class="radar" id="radarCanvas" width="500" height="500"></canvas>' +
+      '<div>' +
+        r.dimensions.map(d=>'<div class="dim-row">' +
+          '<div class="top"><b>' + esc(d.name) + '</b><span class="sc">' + d.score.toFixed(1) + ' / ' + d.max + '</span></div>' +
+          '<div class="dim-bar"><i style="width:' + ((d.score / d.max) * 100).toFixed(1) + '%"></i></div>' +
+          (d.comment ? '<div class="cmt">' + esc(d.comment) + '</div>' : '') +
+        '</div>').join('') +
+      '</div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="grid-2">' +
+    '<div class="card">' +
+      '<div class="card-head"><h2>' + esc(zh?'亮点':'What worked') + '</h2></div>' +
+      '<div class="list-block">' + (r.strengths.length ? r.strengths.map(x=>'<div class="list-item"><span class="b good">+</span><span>' + esc(x) + '</span></div>').join('') : '<div class="small muted">—</div>') + '</div>' +
+    '</div>' +
+    '<div class="card">' +
+      '<div class="card-head"><h2>' + esc(zh?'下一步练什么':'Next moves') + '</h2></div>' +
+      '<div class="list-block">' + (r.improvements.length ? r.improvements.map(x=>'<div class="list-item"><span class="b bad">→</span><span>' + esc(x) + '</span></div>').join('') : '<div class="small muted">—</div>') + '</div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'错误清单':'Error list') + '</h2><span class="right pill mono">' + r.errors.length + '</span></div>' +
+    (r.errors.length
+      ? '<div class="list-block">' + r.errors.map(e=>'<div class="err-item">' +
+          '<div class="head"><span class="pill warm">' + esc(e.category) + '</span></div>' +
+          (e.excerpt ? '<div class="ex">' + esc(e.excerpt) + '</div>' : '') +
+          '<div class="iss"><b>' + esc(zh?'问题':'Issue') + '：</b>' + esc(e.issue) + '</div>' +
+          '<div class="sug"><b>' + esc(zh?'建议':'Fix') + '：</b>' + esc(e.suggestion) + '</div>' +
+        '</div>').join('') + '</div>'
+      : '<div class="small muted">' + esc(zh?'这一场没有抓到明显错误。':'No obvious errors caught here.') + '</div>') +
+    '<div class="divider"></div>' +
+    '<div class="card-head" style="margin-bottom:10px"><h2>' + esc(zh?'作答原文':'Your answer') + '</h2>' +
+      '<span class="right tiny muted">' + s.content.wordCount + ' ' + esc(isEN?(zh?'词':'words'):(zh?'字':'chars')) + '</span></div>' +
+    '<p class="small" style="white-space:pre-wrap;line-height:1.75;color:var(--ink-2)">' + esc(s.content.text) + '</p>' +
+  '</div>' +
+
+  '<div class="card flat">' +
+    '<div class="row" style="justify-content:space-between">' +
+      '<div class="row">' +
+        '<button class="btn primary" id="makeCard">' + ICON.spark + ' ' + esc(zh?'生成结果卡片':'Result card') + '</button>' +
+        '<button class="btn ghost" id="copySummary">' + esc(zh?'复制摘要':'Copy summary') + '</button>' +
+        '<button class="btn ghost" id="rescore">' + esc(zh?'重新评分':'Rescore') + '</button>' +
+      '</div>' +
+      '<button class="btn" id="again">' + esc(zh?'再来一题':'Next prompt') + ' →</button>' +
+    '</div>' +
+    (s.aiMeta && s.aiMeta.error ? '<p class="hint-line" style="margin-top:10px">' + esc(zh?'AI 调用失败，已降级为本地估算：':'AI failed, fell back to local: ') + esc(s.aiMeta.error) + '</p>' : '') +
+  '</div>';
+}
+
+function drawRadar(canvas, dims){
+  if(!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = 250, H = 250;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = '100%'; canvas.style.height = 'auto';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+  const cx = W/2, cy = H/2 + 4, R = W * 0.34;
+  const n = dims.length;
+  const ang = (i)=> -Math.PI/2 + i * 2 * Math.PI / n;
+
+  // grid
+  for(let ring = 1; ring <= 4; ring++){
+    ctx.beginPath();
+    for(let i = 0; i < n; i++){
+      const r = R * ring / 4;
+      const x = cx + Math.cos(ang(i)) * r, y = cy + Math.sin(ang(i)) * r;
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = ring === 4 ? 'rgba(32,36,44,.16)' : 'rgba(32,36,44,.07)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  for(let i = 0; i < n; i++){
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(ang(i)) * R, cy + Math.sin(ang(i)) * R);
+    ctx.strokeStyle = 'rgba(32,36,44,.07)';
+    ctx.stroke();
+  }
+  // shape
+  ctx.beginPath();
+  dims.forEach((d, i)=>{
+    const ratio = clamp(d.score / d.max, 0, 1);
+    const x = cx + Math.cos(ang(i)) * R * ratio, y = cy + Math.sin(ang(i)) * R * ratio;
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  });
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
+  grad.addColorStop(0, 'rgba(140,166,196,.55)');
+  grad.addColorStop(1, 'rgba(111,134,166,.45)');
+  ctx.fillStyle = grad; ctx.fill();
+  ctx.strokeStyle = 'rgba(79,105,140,.85)'; ctx.lineWidth = 1.6; ctx.stroke();
+
+  // dots
+  dims.forEach((d, i)=>{
+    const ratio = clamp(d.score / d.max, 0, 1);
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(ang(i)) * R * ratio, cy + Math.sin(ang(i)) * R * ratio, 3, 0, Math.PI*2);
+    ctx.fillStyle = '#4f698c'; ctx.fill();
+  });
+
+  // labels
+  ctx.font = '600 11px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillStyle = 'rgba(60,66,76,.78)';
+  dims.forEach((d, i)=>{
+    const label = d.name.replace(/（.*）/,'').replace(/ \(.*\)/, '');
+    const x = cx + Math.cos(ang(i)) * (R + 26);
+    const y = cy + Math.sin(ang(i)) * (R + 26);
+    ctx.textAlign = Math.abs(Math.cos(ang(i))) < 0.3 ? 'center' : (Math.cos(ang(i)) > 0 ? 'left' : 'right');
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label.length > 7 ? label.slice(0, 7) : label, x, y);
+  });
+}
+
+/* ---------- 结果卡片（Canvas 1080×1440） ---------- */
+function buildCard(s){
+  const W = 1080, H = 1440;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const isEN = s.language === 'en';
+  const r = s.review;
+
+  // background
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#f7f4ee');
+  bg.addColorStop(.55, '#eff3f9');
+  bg.addColorStop(1, '#f4eae5');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  // soft blobs
+  const blob = (x, y, rad, col)=>{
+    const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+    g.addColorStop(0, col); g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI*2); ctx.fill();
+  };
+  blob(W*0.86, 90, 320, 'rgba(150,175,205,.22)');
+  blob(W*0.1, H*0.9, 380, 'rgba(205,165,150,.16)');
+
+  // panel
+  const px = 70, py = 90, pw = W - 140, ph = H - 180;
+  ctx.save();
+  ctx.shadowColor = 'rgba(40,50,70,.18)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 18;
+  ctx.fillStyle = 'rgba(255,255,255,.74)';
+  roundRect(ctx, px, py, pw, ph, 48); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2;
+  roundRect(ctx, px, py, pw, ph, 48); ctx.stroke();
+
+  // header
+  ctx.fillStyle = '#6b7380';
+  ctx.font = '600 20px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('I M P R O M P T U   L A B', px + 56, py + 78);
+  ctx.textAlign = 'right';
+  ctx.font = '400 19px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(fmtDate(s.createdAt).slice(0, 10), px + pw - 56, py + 78);
+
+  // pills
+  ctx.textAlign = 'left';
+  let cx0 = px + 56, cy0 = py + 120;
+  const pill = (label, w)=>{
+    ctx.fillStyle = 'rgba(111,134,166,.12)';
+    roundRect(ctx, cx0, cy0, w, 42, 21); ctx.fill();
+    ctx.fillStyle = '#4f698c';
+    ctx.font = '600 19px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(label, cx0 + 18, cy0 + 28);
+    cx0 += w + 12;
+  };
+  pill(isEN ? 'ENGLISH' : '中文', isEN ? 116 : 86);
+  pill(s.mode === 'retell' ? 'CONCEPT RETELL' : 'IMPROMPTU', s.mode === 'retell' ? 206 : 178);
+  pill(s.inputType === 'voice' ? (isEN ? 'VOICE' : '语音') : (isEN ? 'TEXT' : '文本'), s.inputType === 'voice' ? (isEN ? 100 : 86) : 86);
+
+  // topic
+  ctx.fillStyle = '#242a33';
+  ctx.font = '700 44px "PingFang SC","Microsoft YaHei",sans-serif';
+  const topicLines = wrapText(ctx, s.topic, pw - 112, 3);
+  topicLines.forEach((line, i)=> ctx.fillText(line, px + 56, py + 236 + i * 58));
+
+  // score
+  const sy = py + 236 + topicLines.length * 58 + 66;
+  ctx.fillStyle = '#2b3440';
+  ctx.font = '700 104px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(r.overall.toFixed(1), px + 50, sy + 78);
+  const scoreW = ctx.measureText(r.overall.toFixed(1)).width;
+  ctx.fillStyle = '#8b929c';
+  ctx.font = '400 26px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText('/ ' + (isEN ? 9 : 5), px + 70 + scoreW, sy + 76);
+  ctx.fillStyle = '#4f698c';
+  ctx.font = '600 28px "PingFang SC","Microsoft YaHei",sans-serif';
+  const bandText = r.band;
+  const bw = ctx.measureText(bandText).width + 40;
+  ctx.fillStyle = 'rgba(111,134,166,.14)';
+  roundRect(ctx, px + pw - 56 - bw, sy + 22, bw, 52, 26); ctx.fill();
+  ctx.fillStyle = '#42608a';
+  ctx.font = '600 26px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(bandText, px + pw - 56 - bw + 20, sy + 58);
+
+  // dims
+  let dy = sy + 150;
+  const dimW = pw - 112;
+  r.dimensions.slice(0, 5).forEach(d=>{
+    ctx.fillStyle = '#3a424e';
+    ctx.font = '600 22px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(d.name.replace(/（.*）/,'').replace(/ \(.*\)/, ''), px + 56, dy);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#6b7891';
+    ctx.font = '600 22px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(d.score.toFixed(1) + ' / ' + d.max, px + pw - 56, dy);
+    ctx.textAlign = 'left';
+    const ratio = clamp(d.score / d.max, 0, 1);
+    ctx.fillStyle = 'rgba(32,36,44,.08)';
+    roundRect(ctx, px + 56, dy + 14, dimW, 10, 5); ctx.fill();
+    const g = ctx.createLinearGradient(px + 56, 0, px + 56 + dimW, 0);
+    g.addColorStop(0, '#c3d0e0'); g.addColorStop(1, '#6f86a6');
+    ctx.fillStyle = g;
+    roundRect(ctx, px + 56, dy + 14, Math.max(8, dimW * ratio), 10, 5); ctx.fill();
+    dy += 66;
+  });
+
+  // highlights
+  const blockY = Math.max(dy + 24, py + ph - 330);
+  ctx.fillStyle = 'rgba(32,36,44,.08)';
+  ctx.fillRect(px + 56, blockY - 26, pw - 112, 1);
+
+  const drawBlock = (label, text, y, color)=>{
+    ctx.fillStyle = color;
+    ctx.font = '600 18px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.fillText(label, px + 56, y);
+    ctx.fillStyle = '#3c444f';
+    ctx.font = '400 21px "PingFang SC","Microsoft YaHei",sans-serif';
+    wrapText(ctx, text, pw - 112, 2).forEach((line, i)=> ctx.fillText(line, px + 56, y + 34 + i * 30));
+  };
+  drawBlock(isEN ? 'WHAT WORKED' : '亮点', (r.strengths[0] || '—'), blockY + 26, '#728d78');
+  drawBlock(isEN ? 'NEXT MOVE' : '下一步', (r.improvements[0] || '—'), blockY + 122, '#b0806f');
+
+  // footer
+  ctx.fillStyle = '#8b929c';
+  ctx.font = '400 19px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText((isEN ? 'Generated locally · ' : '本地生成 · ') + fmtDuration(s.timing.totalSec), px + 56, py + ph - 32);
+  ctx.textAlign = 'right';
+  ctx.fillText(s.aiMeta && s.aiMeta.source === 'ai' ? 'AI ' + (s.aiMeta.model || '') : (isEN ? 'LOCAL RULE' : '本地规则'), px + pw - 56, py + ph - 32);
+
+  return cv;
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  r = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function wrapText(ctx, text, maxW, maxLines){
+  const out = [];
+  let line = '';
+  const chars = Array.from(String(text || ''));
+  for(const ch of chars){
+    const test = line + ch;
+    if(ctx.measureText(test).width > maxW && line){
+      out.push(line);
+      line = ch;
+      if(out.length >= maxLines - 1){ break; }
+    } else line = test;
+  }
+  // 若提前截断，补省略号
+  const consumed = out.join('').length;
+  const rest = String(text || '').slice(consumed);
+  if(out.length >= maxLines - 1 && ctx.measureText(line + rest).width > maxW){
+    line = line.replace(/.$/,'…');
+  }
+  out.push(line);
+  return out.slice(0, maxLines);
+}
+
+function bindResult(){
+  const s = currentRecord();
+  if(!s) return;
+  if(s.scored && s.review) drawRadar(document.getElementById('radarCanvas'), s.review.dimensions);
+
+  const rescore = document.getElementById('rescore');
+  if(rescore) rescore.onclick = ()=>{
+    s.scored = false; s.review = null;
+    app.session = s;
+    setView('result', {record:s, scoring:true});
+    scoreSession(s);
+  };
+
+  const again = document.getElementById('again');
+  if(again) again.onclick = ()=>{ app.session = null; app.outline = ''; drawTopic(); };
+
+  const mk = document.getElementById('makeCard');
+  if(mk) mk.onclick = ()=>{
+    if(!s.scored) return;
+    const cv = buildCard(s);
+    const url = cv.toDataURL('image/png');
+    const body = document.getElementById('modalBody');
+    body.innerHTML = '<img alt="result card" src="' + url + '">' +
+      '<div class="modal-actions">' +
+        '<button class="btn ghost" id="closeModal">Close</button>' +
+        '<button class="btn primary" id="dlCard">PNG</button>' +
+      '</div>';
+    document.getElementById('modal').classList.add('on');
+    body.querySelector('#closeModal').onclick = closeModal;
+    body.querySelector('#dlCard').onclick = ()=>{
+      const a = document.createElement('a');
+      a.download = (app.lang==='zh'?'表达复盘卡-':'review-card-') + s.createdAt.slice(0,10) + '.png';
+      a.href = url; a.click();
+    };
+  };
+
+  const cp = document.getElementById('copySummary');
+  if(cp) cp.onclick = async ()=>{
+    if(!s.scored) return;
+    const r = s.review;
+    const txt = (app.lang==='zh'?'【表达复盘】\n':'【Review】\n') + s.topic + '\n' +
+      (app.lang==='zh'?'总分 ':'Score ') + r.overall.toFixed(1) + ' · ' + r.band + '\n' +
+      (app.lang==='zh'?'分项：':'Dimensions: ') + r.dimensions.map(d=>d.name.replace(/（.*）/,'') + ' ' + d.score.toFixed(1)).join(' / ') + '\n' +
+      (app.lang==='zh'?'亮点：':'Won: ') + (r.strengths[0] || '—') + '\n' +
+      (app.lang==='zh'?'下一步：':'Next: ') + (r.improvements[0] || '—');
+    try{ await navigator.clipboard.writeText(txt); toast(app.lang==='zh'?'摘要已复制':'Summary copied'); }
+    catch(e){ toast(app.lang==='zh'?'复制失败，请手动选择':'Copy failed'); }
+  };
+}
+
+/* ============================================================
+   历史记录
+   ============================================================ */
+function viewHistory(){
+  const zh = app.lang === 'zh';
+  const f = app.filters;
+  const list = sessions.filter(s=>
+    (f.historyLang === 'all' || s.language === f.historyLang) &&
+    (f.historyMode === 'all' || s.mode === f.historyMode)
+  );
+  const scored = list.filter(s=>s.scored && s.review);
+  const avg = scored.length ? round1(scored.reduce((a,s)=>a + s.review.overall, 0) / scored.length) : null;
+  return '' +
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'练习记录':'Sessions') + '</h2>' +
+      '<span class="right pill mono">' + list.length + '</span></div>' +
+    '<div class="stat-grid" style="margin-bottom:16px">' +
+      '<div class="stat"><div class="v">' + list.length + '</div><div class="k">' + esc(zh?'场次':'Sessions') + '</div></div>' +
+      '<div class="stat"><div class="v">' + (avg === null ? '—' : avg) + '</div><div class="k">' + esc(zh?'平均分':'Avg') + '</div></div>' +
+      '<div class="stat"><div class="v">' + Math.round(list.reduce((a,s)=> a + (s.timing.totalSec||0), 0) / 60) + '</div><div class="k">' + esc(zh?'累计分钟':'Minutes') + '</div></div>' +
+      '<div class="stat"><div class="v">' + list.filter(s=>!s.scored).length + '</div><div class="k">' + esc(zh?'未评分':'Unscored') + '</div></div>' +
+    '</div>' +
+    '<div class="row" style="margin-bottom:14px">' +
+      '<div class="chips">' +
+        '<button class="chip ' + (f.historyLang==='all'?'on':'') + '" data-hf="historyLang" data-hv="all">' + esc(zh?'全部语言':'All') + '</button>' +
+        '<button class="chip ' + (f.historyLang==='zh'?'on':'') + '" data-hf="historyLang" data-hv="zh">中文</button>' +
+        '<button class="chip ' + (f.historyLang==='en'?'on':'') + '" data-hf="historyLang" data-hv="en">English</button>' +
+      '</div>' +
+      '<div class="chips">' +
+        '<button class="chip ' + (f.historyMode==='all'?'on':'') + '" data-hf="historyMode" data-hv="all">' + esc(zh?'全部模式':'All modes') + '</button>' +
+        '<button class="chip ' + (f.historyMode==='impromptu'?'on':'') + '" data-hf="historyMode" data-hv="impromptu">' + esc(zh?'即兴':'Impromptu') + '</button>' +
+        '<button class="chip ' + (f.historyMode==='retell'?'on':'') + '" data-hf="historyMode" data-hv="retell">' + esc(zh?'复述':'Retell') + '</button>' +
+      '</div>' +
+    '</div>' +
+    (list.length
+      ? '<div class="list-block">' + list.map(s=>'<button class="list-row" data-open="' + s.id + '">' +
+          '<div class="main-col">' +
+            '<div class="t">' + esc(s.topic) + '</div>' +
+            '<div class="m">' +
+              '<span>' + esc(fmtDate(s.createdAt)) + '</span>' +
+              '<span>' + esc(s.language==='zh'?'中文':'EN') + (s.mode==='retell'?(' · '+(zh?'复述':'retell')):(' · '+(zh?'即兴':'impromptu'))) + '</span>' +
+              '<span>' + esc(s.inputType==='voice'?(zh?'语音':'voice'):(zh?'文本':'text')) + '</span>' +
+              '<span>' + esc(fmtDuration(s.timing.totalSec)) + '</span>' +
+            '</div>' +
+          '</div>' +
+          (s.scored && s.review
+            ? '<div class="score">' + s.review.overall.toFixed(1) + '</div>'
+            : '<div class="score na">' + esc(zh?'未评分':'unscored') + '</div>') +
+        '</button>').join('') + '</div>'
+      : '<div class="empty">' + esc(zh?'还没有记录，先去做一场练习。':'No sessions yet — run one first.') + '</div>') +
+  '</div>';
+}
+
+function bindHistory(){
+  document.querySelectorAll('[data-hf]').forEach(b=>{
+    b.onclick = ()=>{ app.filters[b.dataset.hf] = b.dataset.hv; render(); };
+  });
+  document.querySelectorAll('[data-open]').forEach(b=>{
+    b.onclick = ()=>{
+      const s = sessions.find(x=> x.id === b.dataset.open);
+      if(!s) return;
+      app.session = s;
+      setView('result', {record:s});
+    };
+  });
+}
+
+/* ============================================================
+   错误集锦
+   ============================================================ */
+function errorCats(){
+  const map = {};
+  errorBank.forEach(e=>{ map[e.category] = (map[e.category] || 0) + 1; });
+  return Object.keys(map).map(k=>({cat:k, n:map[k]})).sort((a,b)=> b.n - a.n);
+}
+
+function withinRange(iso, range){
+  if(range === 'all') return true;
+  const days = range === '7' ? 7 : 30;
+  return (Date.now() - new Date(iso).getTime()) < days * 86400000;
+}
+
+function viewErrors(){
+  const zh = app.lang === 'zh';
+  const f = app.filters;
+  const cats = errorCats();
+  const total = errorBank.length;
+  const visible = errorBank.filter(e=>
+    (f.errLang === 'all' || e.language === f.errLang) &&
+    (f.errCat === 'all' || e.category === f.errCat) &&
+    withinRange(e.createdAt, f.errRange) &&
+    (f.showMastered ? true : !e.mastered)
+  );
+  const openCount = errorBank.filter(e=>!e.mastered).length;
+  return '' +
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'错误集锦':'Error bank') + '</h2>' +
+      '<span class="right pill mono">' + openCount + ' ' + esc(zh?'待改进':'open') + ' / ' + total + '</span></div>' +
+    (cats.length
+      ? '<div style="margin-bottom:6px">' + cats.slice(0, 8).map(c=>{
+          const pct = total ? Math.round(c.n / total * 100) : 0;
+          return '<div class="cat-bar"><div class="top"><span>' + esc(c.cat) + '</span><span class="muted">' + c.n + ' · ' + pct + '%</span></div>' +
+            '<div class="bar"><i style="width:' + pct + '%"></i></div></div>';
+        }).join('') + '</div>'
+      : '<div class="empty">' + esc(zh?'还没有错误记录。完成一场评分后会自动归档。':'No errors yet — they appear after a scored session.') + '</div>') +
+    '<div class="divider"></div>' +
+    '<div class="row" style="gap:8px">' +
+      '<div class="chips">' +
+        '<button class="chip ' + (f.errLang==='all'?'on':'') + '" data-ef="errLang" data-ev="all">' + esc(zh?'全部语言':'All') + '</button>' +
+        '<button class="chip ' + (f.errLang==='zh'?'on':'') + '" data-ef="errLang" data-ev="zh">中文</button>' +
+        '<button class="chip ' + (f.errLang==='en'?'on':'') + '" data-ef="errLang" data-ev="en">English</button>' +
+      '</div>' +
+      '<div class="chips">' +
+        '<button class="chip ' + (f.errRange==='all'?'on':'') + '" data-ef="errRange" data-ev="all">' + esc(zh?'全部时间':'All time') + '</button>' +
+        '<button class="chip ' + (f.errRange==='7'?'on':'') + '" data-ef="errRange" data-ev="7">' + esc(zh?'近 7 天':'7 days') + '</button>' +
+        '<button class="chip ' + (f.errRange==='30'?'on':'') + '" data-ef="errRange" data-ev="30">' + esc(zh?'近 30 天':'30 days') + '</button>' +
+      '</div>' +
+      '<button class="chip ' + (f.showMastered?'on':'') + '" data-toggle-mastered>' + esc(zh?'显示已掌握':'Show mastered') + '</button>' +
+    '</div>' +
+    (cats.length ? '<div class="chips" style="margin-top:10px">' +
+      '<button class="chip ' + (f.errCat==='all'?'on':'') + '" data-ef="errCat" data-ev="all">' + esc(zh?'全部类别':'All types') + '</button>' +
+      cats.map(c=>'<button class="chip ' + (f.errCat===c.cat?'on':'') + '" data-ef="errCat" data-ev="' + esc(c.cat) + '">' + esc(c.cat) + ' · ' + c.n + '</button>').join('') +
+    '</div>' : '') +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'待改进条目':'Entries') + '</h2><span class="right tiny muted">' + visible.length + '</span></div>' +
+    (visible.length
+      ? '<div class="list-block">' + visible.map(e=>'<div class="err-item">' +
+          '<div class="head">' +
+            '<span class="pill warm">' + esc(e.category) + '</span>' +
+            '<span>' + esc(fmtDate(e.createdAt)) + '</span>' +
+            '<span>' + esc(e.language==='zh'?'中文':'EN') + '</span>' +
+          '</div>' +
+          (e.excerpt ? '<div class="ex">' + esc(e.excerpt) + '</div>' : '') +
+          '<div class="iss">' + esc(e.issue) + '</div>' +
+          '<div class="sug">' + esc(e.suggestion) + '</div>' +
+          '<div class="row" style="margin-top:4px">' +
+            '<button class="btn sm ghost" data-master="' + e.id + '">' + esc(e.mastered ? (zh?'撤销已掌握':'Unmark') : (zh?'标记已掌握':'Mark mastered')) + '</button>' +
+            '<button class="btn sm ghost" data-jump="' + e.sessionId + '">' + esc(zh?'看这场':'Open session') + '</button>' +
+          '</div>' +
+        '</div>').join('') + '</div>'
+      : '<div class="empty">' + esc(zh?'当前筛选下没有条目。':'Nothing under these filters.') + '</div>') +
+  '</div>';
+}
+
+function bindErrors(){
+  document.querySelectorAll('[data-ef]').forEach(b=>{
+    b.onclick = ()=>{ app.filters[b.dataset.ef] = b.dataset.ev; render(); };
+  });
+  const tm = document.querySelector('[data-toggle-mastered]');
+  if(tm) tm.onclick = ()=>{ app.filters.showMastered = !app.filters.showMastered; render(); };
+  document.querySelectorAll('[data-master]').forEach(b=>{
+    b.onclick = ()=>{
+      const e = errorBank.find(x=> x.id === b.dataset.master);
+      if(!e) return;
+      e.mastered = !e.mastered;
+      saveErrors(); render();
+    };
+  });
+  document.querySelectorAll('[data-jump]').forEach(b=>{
+    b.onclick = ()=>{
+      const s = sessions.find(x=> x.id === b.dataset.jump);
+      if(!s){ toast(app.lang==='zh'?'找不到这场记录':'Session not found'); return; }
+      app.session = s;
+      setView('result', {record:s});
+    };
+  });
+}
+
+/* ============================================================
+   设置
+   ============================================================ */
+function viewSettings(){
+  const zh = app.lang === 'zh';
+  const ai = settings.ai || {};
+  const configured = !!(ai.endpoint && ai.model);
+  return '' +
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'AI 评分接口':'AI scoring') + '</h2>' +
+      '<span class="right tiny muted"><span class="status-dot ' + (configured?'ok':'') + '"></span> ' +
+      esc(configured ? (zh?'已配置':'configured') : (zh?'未配置，使用本地规则':'not set — local rules')) + '</span></div>' +
+    '<p class="hint-line" style="margin-bottom:14px">' +
+      esc(zh?'接入任意「兼容 OpenAI Chat Completions」的接口即可（自建网关、Azure、各类中转均可）。请求由浏览器直接发出，Key 只存本机，请确认接口允许跨域（CORS）。'
+             :'Any OpenAI-compatible Chat Completions endpoint works. The request goes straight from this browser; the key stays local. CORS must be allowed.') +
+    '</p>' +
+    '<div class="field"><label>' + esc(zh?'接口地址 Endpoint':'Endpoint') + '</label>' +
+      '<input id="aiEndpoint" placeholder="https://api.example.com/v1" value="' + esc(ai.endpoint || '') + '">' +
+      '<span class="tip">' + esc(zh?'填到 /v1 即可，会自动补 /chat/completions':'Base URL; /chat/completions is appended automatically') + '</span></div>' +
+    '<div class="field"><label>API Key</label>' +
+      '<input id="aiKey" type="password" placeholder="sk-..." value="' + esc(ai.apiKey || '') + '">' +
+      '<span class="tip">' + esc(zh?'仅保存在本机浏览器；留空则不带 Authorization 头':'Local only; empty means no Authorization header') + '</span></div>' +
+    '<div class="field"><label>' + esc(zh?'模型名 Model':'Model') + '</label>' +
+      '<input id="aiModel" placeholder="gpt-4o-mini / qwen-plus / deepseek-chat" value="' + esc(ai.model || '') + '"></div>' +
+    '<div class="row" style="justify-content:space-between;margin-top:6px">' +
+      '<button class="btn ghost" id="testAI">' + esc(zh?'测试连接':'Test connection') + '</button>' +
+      '<button class="btn primary" id="saveAI">' + esc(zh?'保存配置':'Save') + '</button>' +
+    '</div>' +
+    '<p class="hint-line" style="margin-top:10px">' + esc(zh?'未配置或调用失败时，本场会自动降级为本地规则估算，记录仍会保存。':'If unset or failing, the session falls back to local rule estimates and is still saved.') + '</p>' +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'默认偏好':'Defaults') + '</h2></div>' +
+    '<div class="grid-2">' +
+      '<div class="field"><label>' + esc(zh?'默认语言':'Language') + '</label>' +
+        '<select id="defLang"><option value="zh"' + (settings.defaultLanguage==='zh'?' selected':'') + '>中文</option><option value="en"' + (settings.defaultLanguage==='en'?' selected':'') + '>English</option></select></div>' +
+      '<div class="field"><label>' + esc(zh?'默认模式':'Mode') + '</label>' +
+        '<select id="defMode"><option value="impromptu"' + (settings.defaultMode==='impromptu'?' selected':'') + '>' + esc(zh?'即兴演讲':'Impromptu') + '</option><option value="retell"' + (settings.defaultMode==='retell'?' selected':'') + '>' + esc(zh?'概念复述':'Retell') + '</option></select></div>' +
+      '<div class="field"><label>' + esc(zh?'默认体裁':'Input') + '</label>' +
+        '<select id="defInput"><option value="voice"' + (settings.defaultInputType==='voice'?' selected':'') + '>' + esc(zh?'语音':'Voice') + '</option><option value="text"' + (settings.defaultInputType==='text'?' selected':'') + '>' + esc(zh?'文本':'Text') + '</option></select></div>' +
+      '<div class="field"><label>' + esc(zh?'默认档位':'Pace') + '</label>' +
+        '<select id="defLevel">' +
+          ['quick','standard','deep','none'].map(k=>'<option value="' + k + '"' + (settings.defaultLevel===k?' selected':'') + '>' + esc(LEVELS[k][app.lang]) + '</option>').join('') +
+        '</select></div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card">' +
+    '<div class="card-head"><h2>' + esc(zh?'本地数据':'Local data') + '</h2>' +
+      '<span class="right tiny muted">' + sessions.length + ' ' + esc(zh?'场 · ':'sessions · ') + errorBank.length + ' ' + esc(zh?'条错误':'errors') + '</span></div>' +
+    '<p class="hint-line">' + esc(zh?'作答原文、转写与评分都只存在本机 localStorage，不上传第三方（除非你自己配置了上方接口）。':'Answers, transcripts and reviews stay in localStorage — nothing is uploaded unless you configure the endpoint above.') + '</p>' +
+    '<div class="divider"></div>' +
+    '<div class="row" style="justify-content:space-between">' +
+      '<div class="row">' +
+        '<button class="btn ghost" id="exportData">' + esc(zh?'导出全部数据 JSON':'Export JSON') + '</button>' +
+        '<button class="btn danger" id="clearData">' + esc(zh?'清空本地数据':'Clear data') + '</button>' +
+      '</div>' +
+      '<span class="tiny muted">' + esc(zh?'清空需连续点击两次确认':'Clear needs two clicks') + '</span>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="card flat">' +
+    '<div class="card-head"><h2>' + esc(zh?'关于':'About') + '</h2></div>' +
+    '<p class="small muted" style="line-height:1.7">' +
+      esc(zh?'双语随机演讲与写作练习：内置 ':'Bilingual speaking & writing drills: ') + QUESTIONS.length + esc(zh?' 道题、':' prompts, ') + CONCEPTS.length + esc(zh?' 个概念。单文件运行，无需后端。':' concepts. Single file, no backend.') +
+    '</p>' +
+  '</div>';
+}
+
+function bindSettings(){
+  const zh = app.lang === 'zh';
+  document.getElementById('saveAI').onclick = ()=>{
+    settings.ai = {
+      endpoint: document.getElementById('aiEndpoint').value.trim(),
+      apiKey: document.getElementById('aiKey').value.trim(),
+      model: document.getElementById('aiModel').value.trim()
+    };
+    saveSettings();
+    toast(zh?'已保存 AI 配置':'AI settings saved');
+    render();
+  };
+  document.getElementById('testAI').onclick = async ()=>{
+    const endpoint = document.getElementById('aiEndpoint').value.trim();
+    const key = document.getElementById('aiKey').value.trim();
+    const model = document.getElementById('aiModel').value.trim();
+    if(!endpoint || !model){ toast(zh?'先填地址和模型名':'Fill endpoint and model first'); return; }
+    let url = endpoint.replace(/\/+$/,'');
+    if(!/\/chat\/completions(\?|$)/.test(url)) url += /\/v1$/.test(url) ? '/chat/completions' : '/v1/chat/completions';
+    toast(zh?'测试中…':'Testing…');
+    try{
+      const res = await fetch(url, {
+        method:'POST',
+        headers: Object.assign({'Content-Type':'application/json'}, key?{'Authorization':'Bearer '+key}:{}),
+        body: JSON.stringify({model, temperature:0, max_tokens:16, messages:[{role:'user',content:'Reply with the single word: ok'}]})
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status + ' ' + (await res.text()).slice(0, 90));
+      await res.json();
+      toast(zh?'连接成功，可以评分了':'Connection OK');
+    }catch(e){
+      toast((zh?'连接失败：':'Failed: ') + (e.message || 'network').slice(0, 100));
+    }
+  };
+  const map = {defLang:'defaultLanguage', defMode:'defaultMode', defInput:'defaultInputType', defLevel:'defaultLevel'};
+  Object.keys(map).forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.onchange = ()=>{
+      settings[map[id]] = el.value;
+      saveSettings();
+      if(id === 'defLang'){ app.lang = el.value; }
+      if(id === 'defMode'){ app.mode = el.value; }
+      if(id === 'defInput'){ app.inputType = el.value; }
+      if(id === 'defLevel'){ app.level = el.value; }
+      toast(zh?'默认偏好已更新':'Defaults updated');
+      render();
+    };
+  });
+
+  let armed = false, armTimer = null;
+  const clearBtn = document.getElementById('clearData');
+  clearBtn.onclick = ()=>{
+    if(!armed){
+      armed = true;
+      clearBtn.textContent = app.lang==='zh'?'再次点击确认清空':'Click again to confirm';
+      armTimer = setTimeout(()=>{ armed = false; clearBtn.textContent = app.lang==='zh'?'清空本地数据':'Clear data'; }, 4000);
+      return;
+    }
+    clearTimeout(armTimer);
+    sessions = []; errorBank = [];
+    saveSessions(); saveErrors();
+    toast(app.lang==='zh'?'本地数据已清空':'Local data cleared');
+    setView('home');
+  };
+
+  document.getElementById('exportData').onclick = ()=>{
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      version: '1.0',
+      settings, sessions, errors: errorBank
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'impromptu-lab-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    setTimeout(()=> URL.revokeObjectURL(a.href), 3000);
+    toast(app.lang==='zh'?'已导出 JSON':'JSON exported');
+  };
+}
+
+/* ============================================================
+   绑定分发 & 启动
+   ============================================================ */
+function bindView(name){
+  const fn = ({
+    home:bindHome, topic:bindTopic, prep:bindPrep, search:bindSearch,
+    answer:bindAnswer, result:bindResult, history:bindHistory,
+    errors:bindErrors, settings:bindSettings
+  })[name];
+  if(fn) fn();
+}
+
+document.getElementById('modal').addEventListener('click', (e)=>{
+  if(e.target.id === 'modal') closeModal();
+});
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+
+(function boot(){
+  const h = (location.hash || '').replace('#/','');
+  if(['history','errors','settings'].indexOf(h) >= 0) app.view = h;
+  render();
+})();
+</script>
+</body>
+</html>
