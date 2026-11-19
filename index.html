@@ -3076,19 +3076,60 @@ function viewDrill(){
         '<div class="v">' + a.wc + ' ' + esc(zh ? '字' : 'chars') + ' · ' + esc(fmtDuration(a.sec)) + '</div>' +
       '</div>';
     }).join('');
+
+    const check = rec.drill && rec.drill.check;
+    const checking = !!(rec.drill && rec.drill.checking);
+    const max = rec.language === 'en' ? 9 : 5;
+    const showNext = !!(rec.drill && rec.drill.check && rec.drill.check.nextReady);
+
+    let scoreBlock = '';
+    if(checking){
+      scoreBlock = '<div class="loading"><div class="spinner"></div><div class="small muted">' +
+        esc(zh ? '正在按这次复述评分…' : 'Scoring this retell…') + '</div></div>';
+    } else if(check){
+      scoreBlock = '<div class="score-hero" style="margin-top:6px">' +
+          '<div><div class="score-big">' + check.overall.toFixed(1) + '<small>/ ' + max + '</small></div>' +
+            '<div style="margin-top:8px"><span class="band">' + esc(check.band) + '</span></div></div>' +
+          '<div style="flex:1;min-width:180px">' +
+            check.dimensions.slice(0, 4).map(dim=>'<div class="dim-row">' +
+              '<div class="top"><b>' + esc(dim.name) + '</b><span class="sc">' + dim.score.toFixed(1) + '</span></div>' +
+              '<div class="dim-bar"><i style="width:' + ((dim.score / dim.max) * 100).toFixed(1) + '%"></i></div>' +
+            '</div>').join('') +
+            '<div class="tiny muted" style="margin-top:8px">' + esc(check.source === 'ai' ? ('AI · ' + check.model) : (zh ? '本地规则估算' : 'Local estimate')) + '</div>' +
+          '</div>' +
+        '</div>' +
+        (check.strengths && check.strengths.length ? '<div class="list-block" style="margin-top:12px"><div class="list-item"><span class="b good">+</span><span>' + esc(check.strengths[0]) + '</span></div></div>' : '') +
+        (check.improvements && check.improvements.length ? '<div class="list-block" style="margin-top:8px"><div class="list-item"><span class="b bad">→</span><span>' + esc(check.improvements[0]) + '</span></div></div>' : '') +
+        (check.error ? '<p class="hint-line" style="margin-top:8px">' + esc(zh ? 'AI 不可用，已降级：' : 'AI failed: ') + esc(check.error) + '</p>' : '') +
+        (check.nextError ? '<p class="hint-line" style="margin-top:8px">' + esc(zh ? '下一版没生成出来：' : 'Next version failed: ') + esc(check.nextError) + '</p>' : '') +
+        (!check.nextReady && !check.nextError ? '<p class="hint-line" style="margin-top:8px">' + esc(zh ? '配置 AI 后，这里会按得分自动给下一版。' : 'With AI configured this generates the next version.') + '</p>' : '');
+    } else {
+      scoreBlock = '<div class="row" style="margin-top:10px">' +
+        '<button class="btn primary" id="drillCheck">' + esc(zh ? '给这次复述打分':'Score this retell') + '</button>' +
+        '<span class="tiny muted">' + esc(zh ? '按语言与模式评分，再用得分生成下一版':'Score, then generate the next version') + '</span>' +
+      '</div>';
+    }
+
+    const nextLabel = (()=>{
+      if(rec.language === 'en' && rec.ladder) return (zh ? '练 ' + Number(rec.ladder.to).toFixed(1) + ' 分版' : 'Practise the ' + Number(rec.ladder.to).toFixed(1) + ' version');
+      return (zh ? '练新改进版' : 'Practise the new revision');
+    })();
+
     return '<div class="card">' +
-      '<div class="card-head"><h2>' + esc(zh?'这一轮完成':'Round complete') + '</h2>' +
-      '<span class="right pill mono">' + esc(zh?'第 ':'Round ') + d.round + '</span></div>' +
+      '<div class="card-head"><h2>' + esc(zh ? '这一轮完成 · 得分':'Round complete · score') + '</h2>' +
+      '<span class="right pill mono">' + esc(zh ? '第 ':'Round ') + d.round + '</span></div>' +
       '<div class="small muted" style="line-height:1.6">' + esc(rec.topic) + '</div>' +
       '<div class="stage-bar">' + stepper + '</div>' +
       '<div class="mini-table" style="margin-top:14px">' + rows + '</div>' +
-      '<p class="hint-line" style="margin-top:10px">' + esc(zh?'字数掉下来、时长变短通常是变熟了；反而变长往往是又改回自己的旧句型。':'Shorter and faster usually means it stuck.') + '</p>' +
+      scoreBlock +
     '</div>' +
     '<div class="card flat"><div class="row" style="justify-content:space-between">' +
-      '<button class="btn ghost" id="drillBack">' + esc(zh?'回复盘':'Back to review') + '</button>' +
+      '<button class="btn ghost" id="drillBack">' + esc(zh ? '回复盘':'Back to review') + '</button>' +
       '<div class="row">' +
-        '<button class="btn" id="drillRestartTopic">' + esc(zh?'重新录制本题':'Re-record topic') + '</button>' +
-        '<button class="btn primary" id="drillAgain">' + esc(zh?'再来一轮':'Another round') + ' →</button>' +
+        '<button class="btn" id="drillRestartTopic">' + esc(zh ? '重新录制本题':'Re-record topic') + '</button>' +
+        (showNext
+          ? '<button class="btn primary" id="drillNextBand">' + esc(nextLabel) + ' →</button>'
+          : '<button class="btn" id="drillAgain">' + esc(zh ? '再来一轮':'Another round') + ' →</button>') +
       '</div>' +
     '</div></div>';
   }
@@ -3124,6 +3165,16 @@ function bindDrill(){
   if(prev) prev.onclick = ()=>{ if(d.stage > 1){ d.stage--; render(); } };
   const again = document.getElementById('drillAgain');
   if(again) again.onclick = ()=>{ d.round++; d.stage = 1; d.done = false; render(); };
+  const chk = document.getElementById('drillCheck');
+  if(chk) chk.onclick = ()=> triggerDrillScore();
+  const nb = document.getElementById('drillNextBand');
+  if(nb) nb.onclick = ()=>{
+    d.round++;
+    d.stage = 1;
+    d.done = false;
+    render();
+    toast(app.lang==='zh'?'开始练下一版':'Next version');
+  };
   const rt = document.getElementById('drillRestartTopic');
   if(rt && rec) rt.onclick = ()=> repractice(rec);
 }
@@ -3195,9 +3246,98 @@ function finishDrillStage(auto){
     setView('drill');
   } else {
     d.done = true;
-    toast(zh ? '三段走完，看看对比' : 'All three stages done');
     setView('drill');
+    triggerDrillScore();
   }
+}
+
+function triggerDrillScore(){
+  const rec = drillRecord();
+  if(!rec) return;
+  if(rec.drill && rec.drill.checking) return;
+  drillScore(rec, app.drill);
+}
+
+/* ---------- 三段练完：评分 → 升档 → 继续 ---------- */
+async function drillScore(rec, d){
+  if(!rec || !d) return;
+  const attempts = (rec.drill && rec.drill.attempts) || [];
+  const last = attempts[attempts.length - 1];
+  const zh = app.lang === 'zh';
+  if(!last){
+    toast(zh ? '还没有可评分的复述' : 'Nothing to score yet');
+    return;
+  }
+  rec.drill = rec.drill || { attempts: [] };
+  rec.drill.checking = true;
+  if(app.view === 'drill') render();
+
+  const text = last.text;
+  const vs = {
+    language: rec.language,
+    mode: 'impromptu',
+    inputType: rec.inputType,
+    level: rec.level,
+    topic: rec.topic,
+    content:{ text, wordCount: countWords(text, rec.language) },
+    timing:{ prepareSec: 0, searchSec: 0, answerSec: last.sec || 0 }
+  };
+
+  let review = null, source = 'local', errMsg = '';
+  const configured = !!(settings.ai.endpoint && settings.ai.model);
+  if(configured){
+    try{
+      review = await callAI(vs);
+      source = 'ai';
+    }catch(e){
+      errMsg = (e && e.message) ? e.message : 'AI 调用失败';
+      review = localScore(vs);
+    }
+  } else {
+    review = localScore(vs);
+  }
+
+  rec.drill.check = {
+    overall: review.overall,
+    band: review.band,
+    dimensions: review.dimensions,
+    strengths: review.strengths,
+    improvements: review.improvements,
+    source,
+    error: errMsg,
+    model: source === 'ai' ? settings.ai.model : 'local-rule',
+    at: new Date().toISOString(),
+    text
+  };
+  rec.drill.checking = false;
+
+  // 按这次得分给下一版
+  if(source === 'ai'){
+    try{
+      if(rec.language === 'en'){
+        const target = nextBand(review.overall);
+        rec.ladder = await callBandUp(vs, target);
+        rec.revised = {
+          revised: rec.ladder.answer,
+          changes: (rec.ladder.upgrades || []).map(u=>({ type: u.dimension, original: u.from, fixed: u.to, why: u.why })),
+          keywords: rec.ladder.keywords
+        };
+      } else {
+        rec.revised = await callRevise(vs);
+      }
+      rec.drill.check.nextReady = true;
+    }catch(e){
+      rec.drill.check.nextError = (e && e.message ? e.message : '下一版生成失败').slice(0, 160);
+    }
+  }
+
+  const idx = sessions.findIndex(x=> x.id === rec.id);
+  if(idx >= 0) sessions[idx] = rec;
+  saveSessions();
+  if(app.view === 'drill') render();
+  toast(source === 'ai'
+    ? (zh ? ('这一段 ' + rec.drill.check.overall.toFixed(1) + ' 分，下一版已备好') : 'Scored — next version ready')
+    : (zh ? '已用本地规则估算' : 'Local estimate'));
 }
 
 /* ============================================================
