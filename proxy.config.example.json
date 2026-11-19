@@ -1,5 +1,5 @@
 {
-  "upstream": "https://api.deepseek.com/v1",
+  "upstream": "https://ark.cn-beijing.volces.com/api/v3",
   "apiKey": "",
   "port": 8787,
   "allowOrigin": "*"
