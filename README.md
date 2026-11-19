@@ -2,21 +2,29 @@
 
 一款**单文件、零后端**的双语即兴表达练习小游戏：抽题 → 限时准备（或自主检索）→ 语音/文本作答 → AI 评分 → 复盘归档。
 
-面向口语晨练、面试即兴题热身、限时写作训练，以及「查完一个概念后用自己的话讲出来」的复述练习。
+面向口语晨练、面试即兴题热身、限时写作训练，以及"查完一个概念后用自己的话讲出来"的复述练习。
 
 ## 快速开始
 
+### 想用语音作答：双击「启动网页.bat」
+
+浏览器的语音识别只在 **https 或 localhost** 下可用。直接双击 `index.html` 时地址是 `file:///…`，浏览器会拒绝启动语音识别（表现为点了麦克风没反应）。所以：
+
+1. 双击 `启动网页.bat`（内部执行 `node serve.js`，需要有 Node.js）
+2. 浏览器会自动打开 `http://localhost:8080/`
+3. 在这个地址里点麦克风，首次会弹「允许使用麦克风」，点允许
+
+### 只用文本作答：直接双击 index.html 也行
+
 ```bash
-# 方式一：直接双击打开
 start index.html      # Windows
 open  index.html      # macOS
 
-# 方式二：本地起个静态服务（语音识别需要安全上下文时更稳）
+# 或者自己起个服务
 python -m http.server 8080
-# 然后访问 http://localhost:8080
 ```
 
-> 语音识别（Web Speech API）在 Chrome / Edge 上依赖网络与麦克风权限；不支持时会自动降级为文本作答并给出提示。
+> 语音识别依赖 Chrome / Edge 内置的在线语音服务，国内网络可能报 `network` 错误；不支持时应用会自动降级为文本作答。
 
 ## 功能
 
@@ -24,25 +32,81 @@ python -m http.server 8080
 |---|---|
 | 双语题库 | 42 道即兴题（7 个话题分类，中英双语）+ 30 个概念（只给名字，材料自己检索） |
 | 两种模式 | 即兴演讲/观点写作；概念检索复述（检索阶段计时，复述时概念名收起，可回看 1 次） |
-| 节奏档位 | 快 / 标准 / 深度 / 不限时，准备、检索、作答时长随之联动 |
+| 三档节奏 | 快 / 标准 / 深度 / 不限时，准备、检索、作答时长随之联动 |
 | 语音作答 | 实时转写、可编辑纠错、暂停继续、口头禅与停顿统计 |
 | 文本作答 | 中文字数 / 英文词数实时统计 |
 | AI 评分 | 兼容 OpenAI Chat Completions 的任意接口；按雅思（英文）与结构化面试（中文）分项评分 |
 | 降级策略 | 未配置或调用失败时自动用本地规则估算，记录照常保存，可事后重新评分 |
+| 配置指南 | 应用内「设置 → 不会配？打开配置指南」：8 家服务商一键填入、跨域解法、报错对照、麦克风自检 |
 | 复盘 | 总分/等级、雷达图、分项评语、亮点、改进点、逐条错误清单 |
-| 错误集锦 | 跨场次按类别聚合统计，支持语言/类别/时间筛选与「标记已掌握」 |
+| 错误集锦 | 跨场次按类别聚合统计，支持语言/类别/时间筛选与"标记已掌握" |
 | 结果卡片 | Canvas 生成 1080×1440 结果图，可下载 PNG，可复制文本摘要 |
 | 本地数据 | localStorage 保存；支持导出 JSON、二次确认清空 |
 
-## 配置 AI 评分
+## 配置 AI 评分（3 分钟）
 
-进入「设置 → AI 评分接口」，填三项：
+应用内点「设置 → 不会配？打开配置指南」有完整图文步骤和 8 家服务商的一键填入。要点：
 
-- **Endpoint**：填到 `/v1` 即可，会自动补 `/chat/completions`；也支持直接粘贴完整地址
-- **API Key**：仅存本机，留空则不带 `Authorization` 头
-- **Model**：如 `gpt-4o-mini`、`deepseek-chat`、`qwen-plus`
+- **Endpoint**：填到 `/v1` 即可，会自动补 `/chat/completions`；粘贴完整地址也能识别
+- **API Key**：仅存本机 localStorage；留空则不带 `Authorization` 头（走本地代理时正是这样）
+- **Model**：必须与服务商文档完全一致，如 `gpt-4o-mini`、`deepseek-chat`、`qwen-plus`
 
-浏览器直连要求接口允许 **CORS**。保存后可点「测试连接」验证。
+### 常见服务商
+
+| 服务商 | Endpoint | 示例模型 |
+|---|---|---|
+| 本地代理（推荐） | `http://localhost:8787/v1` | 上游模型名 |
+| DeepSeek | `https://api.deepseek.com/v1` | `deepseek-chat` |
+| 阿里云百炼（兼容模式） | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
+| 月之暗面 Kimi | `https://api.moonshot.cn/v1` | `moonshot-v1-8k` |
+| 智谱 GLM | `https://open.bigmodel.cn/api/paas/v4` | `glm-4-flash` |
+| 硅基流动 | `https://api.siliconflow.cn/v1` | `Qwen/Qwen2.5-7B-Instruct` |
+| OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` |
+| OpenRouter | `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` |
+
+### 跨域（CORS）怎么办
+
+多数官方 API 不允许浏览器直连，会报 CORS 错误 —— 这不是配置写错，是浏览器安全策略。两种解法：
+
+**A. 用仓库自带的本地代理（零跨域，推荐）**
+
+```bash
+# 1. 复制配置模板，填入上游地址与 Key
+copy proxy.config.example.json proxy.config.json     # Windows
+cp   proxy.config.example.json proxy.config.json     # macOS / Linux
+
+# 2. 双击「启动代理.bat」，或执行
+node proxy.js
+```
+
+`proxy.config.json`：
+
+```json
+{ "upstream": "https://api.deepseek.com/v1", "apiKey": "sk-xxx", "port": 8787 }
+```
+
+然后在应用里把 Endpoint 填 `http://localhost:8787/v1`，**API Key 留空**（代理会自己加）。
+
+`proxy.config.json` 含密钥，不要提交到仓库（已在 `.gitignore` 中排除）。
+
+**B. 用自己已有的网关**（one-api / new-api 之类），网关通常已处理跨域。
+
+### 报错对照
+
+| 现象 | 含义 | 处理 |
+|---|---|---|
+| `401` | Key 不对或没带上 | 检查漏字符、多余空格、是否加了 `Bearer` 前缀（应用会自动加，别重复） |
+| `403` | Key 无该模型权限 / 账号受限 | 换模型或完成实名 |
+| `404` | 地址拼错 | 填到 `/v1` 就停，别把 `/chat/completions` 写两遍 |
+| `429` | 额度用尽或太快 | 充值或降频；本地规则仍可用 |
+| CORS 错误 | 浏览器拦跨域 | 用上面的本地代理 |
+| 超时 | 代理没启动 / 主机写错 / 网络不通 | 先看代理窗口有没有 listening |
+
+### 一次评分花多少
+
+一次评分几百到一千 token，按常见价格约几分钱。建议在服务商后台设月度限额。Key 只存在本机浏览器，页面代码不会上传它；但导出的 JSON 备份会包含 Key。
+
+### 评分请求契约
 
 评分请求遵循需求文档 §8 的契约：
 
@@ -83,13 +147,30 @@ python -m http.server 8080
 - 单文件 `index.html`，原生 JS，无构建、无框架、无后端；CSS/JS 全内联
 - 页内 hash 路由 + 普通对象状态
 - 数据模型与需求文档 §7 一致（`sessionRecord` / `errorCollection` / `settings`）
+- 附带的 `serve.js` / `proxy.js` 只在本机运行，用于解决语音安全上下文与 API 跨域，应用本身不依赖它们
 
 ## 已知限制
 
 - 发音、语速、停顿只能基于转写文本弱推断，不能替代录音回听
-- 语音识别的转写质量取决于浏览器与网络
+- 语音识别的转写质量取决于浏览器与网络；`file://` 下无法启动，需用 `localhost`
+- Chrome 的语音识别会把音频送到在线服务，离线或受限网络不可用
 - 本地规则评分只是启发式估算，仅用于未配置 AI 时的兜底
 - 结果卡片为本地 Canvas 渲染，未做服务端分享链接
+
+## 目录
+
+```
+index.html                  # 应用本体（单文件，含全部功能与样式）
+serve.js                    # 本地静态服务（localhost:8080，解决语音安全上下文）
+proxy.js                    # 本地 CORS 代理（localhost:8787 → 上游 AI 接口）
+proxy.config.example.json   # 代理配置模板（复制为 proxy.config.json 后填 Key）
+启动网页.bat                # 双击：起静态服务并打开浏览器（Windows）
+启动代理.bat                # 双击：起 CORS 代理（Windows）
+README.md
+LICENSE
+```
+
+需要 Node.js 才能用两个 `.js`（仅本地运行，应用本身不依赖 Node）。macOS / Linux 直接 `node serve.js`、`node proxy.js` 即可。
 
 ## License
 

@@ -1,0 +1,4 @@
+# 本地代理配置含 API Key，不要提交
+proxy.config.json
+node_modules/
+.DS_Store
