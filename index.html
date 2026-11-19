@@ -1837,13 +1837,30 @@ function rubricFor(s){
   return s.inputType === 'voice' ? RUBRIC.zhSpeak : RUBRIC.zhWrite;
 }
 
-function aiEndpoint(){
-  let url = (settings.ai.endpoint || '').trim().replace(/\/+$/, '');
+function endpointToUrl(raw){
+  let url = String(raw || '').trim().replace(/\/+$/, '');
   if(!url) return '';
-  if(!/\/chat\/completions(\?|$)/.test(url)){
-    url += /\/v1$/.test(url) ? '/chat/completions' : '/v1/chat/completions';
+  if(/\/chat\/completions(\?|$)/.test(url)) return url;
+  // 已带版本段（/v1、/api/v3、/api/paas/v4、/compatible-mode/v1 等）时只补末段
+  if(/\/(v\d+|api\/v\d+)$/.test(url)) return url + '/chat/completions';
+  return url + '/v1/chat/completions';
+}
+function aiEndpoint(){
+  return endpointToUrl(settings.ai.endpoint);
+}
+function isLocalEndpoint(){
+  return /localhost|127\.0\.0\.1/i.test(settings.ai.endpoint || '');
+}
+function fetchFailHint(){
+  const zh = app.lang === 'zh';
+  if(isLocalEndpoint()){
+    return zh
+      ? '连不上本地代理。请双击「启动网页.bat」——它会同时开网页和代理（一个窗口即可），并保持窗口开着。'
+      : 'Cannot reach the local proxy. Double-click start-web.bat (it starts both the page and the proxy) and keep the window open.';
   }
-  return url;
+  return zh
+    ? '浏览器拦下了这次请求（跨域 / Failed to fetch）。官方 API 一般不允许网页直连，请把 Endpoint 改成 http://localhost:8787/v1，并先双击「启动网页.bat」。'
+    : 'Blocked by CORS (Failed to fetch). Most official APIs refuse browser calls — set Endpoint to http://localhost:8787/v1 and run start-web.bat.';
 }
 
 async function callAI(s){
@@ -1885,7 +1902,10 @@ async function callAI(s){
       }),
       signal: ctrl.signal
     });
-  } finally { clearTimeout(to); }
+  }catch(e){
+    if(e && e.name === 'AbortError') throw new Error('请求超时（60 秒没有响应）');
+    throw new Error(fetchFailHint());
+  }finally { clearTimeout(to); }
   if(!res.ok){
     const txt = await res.text().catch(()=> '');
     throw new Error('HTTP ' + res.status + ' ' + txt.slice(0, 140));
@@ -2926,8 +2946,12 @@ function viewGuide(){
     '<div class="guide-step"><div class="n">A</div><div class="body">' +
       '<b>' + esc(zh?'用随包附带的本地代理（推荐）':'Use the bundled local proxy (recommended)') + '</b>' +
       '<p>' + esc(zh?'① 把 proxy.config.example.json 改名成 proxy.config.json，填 upstream（服务商地址）和 apiKey。默认已填好火山方舟的 upstream，只需要补 apiKey。':'1. Rename proxy.config.example.json to proxy.config.json, fill upstream and apiKey. The Volcengine Ark upstream is pre-filled.') + '</p>' +
-      '<p>' + esc(zh?'② 双击「启动代理.bat」，窗口里出现 listening 就是起来了。':'2. Double-click start-proxy.bat; you should see "listening".') + '</p>' +
-      '<p>' + esc(zh?'③ 页面里 Endpoint 填 http://localhost:8787/v1，Model 填上游模型名，API Key 留空。':'3. In the app set Endpoint to http://localhost:8787/v1, keep the key empty.') + '</p>' +
+      '<p>' + esc(zh?'② 双击「启动网页.bat」——网页和代理会一起起来（一个窗口搞定）；只想单独起代理再双击「启动代理.bat」。窗口别关。':'2. Double-click start-web.bat — it starts the page AND the proxy in one window. Keep it open.') + '</p>' +
+      '<p>' + esc(zh?'③ 页面里 Endpoint 填 http://localhost:8787/v1，Model 填上游模型名，API Key 留空（或在页面里粘 Key，代理会透传）。':'3. Set Endpoint to http://localhost:8787/v1; the key can be pasted in the app (the proxy passes it through).') + '</p>' +
+      '<div class="row" style="margin-top:10px">' +
+        '<button class="btn sm" id="testProxy">' + esc(zh?'检测代理是否在跑':'Check the proxy') + '</button>' +
+        '<span class="tiny muted" id="proxyStatus">' + esc(zh?'点一下就知道通不通':'Tap to test') + '</span>' +
+      '</div>' +
     '</div></div>' +
     '<div class="guide-step"><div class="n">B</div><div class="body">' +
       '<b>' + esc(zh?'自己有网关（one-api / new-api 之类）':'Or use your own gateway') + '</b>' +
@@ -3014,6 +3038,17 @@ function bindGuide(){
   };
   const back = document.getElementById('backSettings');
   if(back) back.onclick = ()=> setView('settings');
+  const tp = document.getElementById('testProxy');
+  if(tp) tp.onclick = async ()=>{
+    const st = document.getElementById('proxyStatus');
+    st.textContent = zh ? '检测中…' : 'Checking…';
+    try{
+      const r = await fetch('http://localhost:8787/v1/chat/completions', { method:'OPTIONS' });
+      st.textContent = zh ? ('代理活着（HTTP ' + r.status + '），可以去设置填地址了') : ('Proxy alive (HTTP ' + r.status + ')');
+    }catch(e){
+      st.textContent = zh ? '连不上：双击「启动网页.bat」并保持窗口开着' : 'Unreachable — run start-web.bat and keep it open';
+    }
+  };
 }
 
 function bindSettings(){
@@ -3035,8 +3070,9 @@ function bindSettings(){
     const key = document.getElementById('aiKey').value.trim();
     const model = document.getElementById('aiModel').value.trim();
     if(!endpoint || !model){ toast(zh?'先填地址和模型名':'Fill endpoint and model first'); return; }
-    let url = endpoint.replace(/\/+$/,'');
-    if(!/\/chat\/completions(\?|$)/.test(url)) url += /\/v1$/.test(url) ? '/chat/completions' : '/v1/chat/completions';
+    const url = endpointToUrl(endpoint);
+    const prev = settings.ai.endpoint;
+    settings.ai.endpoint = endpoint;
     toast(zh?'测试中…':'Testing…');
     try{
       const res = await fetch(url, {
@@ -3048,7 +3084,10 @@ function bindSettings(){
       await res.json();
       toast(zh?'连接成功，可以评分了':'Connection OK');
     }catch(e){
-      toast((zh?'连接失败：':'Failed: ') + (e.message || 'network').slice(0, 100));
+      const msg = (e && /^(HTTP |请求超时)/.test(e.message || '')) ? e.message : fetchFailHint();
+      toast((zh?'连接失败：':'Failed: ') + msg.slice(0, 160));
+    }finally{
+      settings.ai.endpoint = prev;
     }
   };
   const map = {defLang:'defaultLanguage', defMode:'defaultMode', defInput:'defaultInputType', defLevel:'defaultLevel'};

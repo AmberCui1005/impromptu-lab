@@ -2,7 +2,7 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 echo.
-echo   Starting local server for speech recognition...
+echo   Starting page (localhost:8080) + AI proxy (localhost:8787)...
 echo.
 node serve.js
 echo.

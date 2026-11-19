@@ -6,13 +6,14 @@
 
 ## 快速开始
 
-### 想用语音作答：双击「启动网页.bat」
+### 想用语音 + AI 评分：只双击「启动网页.bat」
 
-浏览器的语音识别只在 **https 或 localhost** 下可用。直接双击 `index.html` 时地址是 `file:///…`，浏览器会拒绝启动语音识别（表现为点了麦克风没反应）。所以：
+一个窗口同时起两件事：
 
-1. 双击 `启动网页.bat`（内部执行 `node serve.js`，需要有 Node.js）
-2. 浏览器会自动打开 `http://localhost:8080/`
-3. 在这个地址里点麦克风，首次会弹「允许使用麦克风」，点允许
+- 页面：`http://localhost:8080/`（语音识别只在 localhost / https 下可用，`file:///` 会被拒绝）
+- AI 代理：`http://localhost:8787/v1`（绕开官方 API 的跨域限制，默认指向火山方舟）
+
+浏览器会自动打开页面。**窗口别关**，关了页面和代理一起停。
 
 ### 只用文本作答：直接双击 index.html 也行
 
@@ -37,32 +38,19 @@ python -m http.server 8080
 | 文本作答 | 中文字数 / 英文词数实时统计 |
 | AI 评分 | 兼容 OpenAI Chat Completions 的任意接口；按雅思（英文）与结构化面试（中文）分项评分 |
 | 降级策略 | 未配置或调用失败时自动用本地规则估算，记录照常保存，可事后重新评分 |
-| 配置指南 | 应用内「设置 → 不会配？打开配置指南」：9 家服务商一键填入（含火山方舟）、跨域解法、报错对照、麦克风自检 |
+| 配置指南 | 应用内「设置 → 不会配？打开配置指南」：8 家服务商一键填入、跨域解法、报错对照、麦克风自检 |
 | 复盘 | 总分/等级、雷达图、分项评语、亮点、改进点、逐条错误清单 |
 | 错误集锦 | 跨场次按类别聚合统计，支持语言/类别/时间筛选与"标记已掌握" |
 | 结果卡片 | Canvas 生成 1080×1440 结果图，可下载 PNG，可复制文本摘要 |
 | 本地数据 | localStorage 保存；支持导出 JSON、二次确认清空 |
 
-## 配置 AI 评分（以火山方舟为例，3 分钟）
+## 配置 AI 评分（3 分钟）
 
-应用内点「设置 → 不会配？打开配置指南」有完整图文步骤和 9 家服务商的一键填入。
-
-### 用火山方舟（豆包）
-
-1. 方舟控制台 →「API Key 管理」创建 Key（`ARK_API_KEY`）
-2. 控制台 →「模型列表」复制要用的 Model ID（例如 `doubao-seed-2-1-pro-260915`）；也可以创建「推理接入点」拿 `ep-` 开头的 ID
-3. 把 Key 填进 `proxy.config.json` 的 `apiKey`（`upstream` 已经是方舟地址，不用改）
-4. 双击「启动代理.bat」，看到 `CORS 代理已启动` 即可
-5. 应用「设置 → AI 评分接口」：Endpoint `http://localhost:8787/v1`，Model 填第 2 步的 ID，**API Key 留空**
-6. 点「测试连接」
-
-> 方舟的 Base URL 是 `/api/v3`，不是 `/v1`；代理会自动把页面里的 `/v1` 前缀换掉再转发。
-
-### 通用三项
+应用内点「设置 → 不会配？打开配置指南」有完整图文步骤和 8 家服务商的一键填入。要点：
 
 - **Endpoint**：填到 `/v1` 即可，会自动补 `/chat/completions`；粘贴完整地址也能识别
 - **API Key**：仅存本机 localStorage；留空则不带 `Authorization` 头（走本地代理时正是这样）
-- **Model**：必须与服务商文档完全一致
+- **Model**：必须与服务商文档完全一致，如 `gpt-4o-mini`、`deepseek-chat`、`qwen-plus`
 
 ### 常见服务商
 
@@ -77,6 +65,16 @@ python -m http.server 8080
 | 硅基流动 | `https://api.siliconflow.cn/v1` | `Qwen/Qwen2.5-7B-Instruct` |
 | OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` |
 | OpenRouter | `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` |
+
+### 用火山方舟（豆包）
+
+1. 方舟控制台 →「API Key 管理」创建 Key（`ARK_API_KEY`）
+2. 控制台 →「模型列表」复制要用的 Model ID（例如 `doubao-seed-2-1-pro-260915`）；也可以创建「推理接入点」拿 `ep-` 开头的 ID
+3. 双击「启动网页.bat」（页面 + 代理一起起来，窗口别关）
+4. 应用「设置 → AI 评分接口」：Endpoint `http://localhost:8787/v1`，Model 填第 2 步的 ID，Key 可以直接粘在页面的 API Key 框里（也可以写进 `proxy.config.json` 的 `apiKey`，二者任选其一）
+5. 点「测试连接」
+
+> 方舟的 Base URL 是 `/api/v3`，不是 `/v1`；代理会自动把页面里的 `/v1` 前缀换成配置里的版本段。
 
 ### 跨域（CORS）怎么办
 
@@ -96,7 +94,7 @@ node proxy.js
 `proxy.config.json`：
 
 ```json
-{ "upstream": "https://ark.cn-beijing.volces.com/api/v3", "apiKey": "sk-xxx", "port": 8787 }
+{ "upstream": "https://api.deepseek.com/v1", "apiKey": "sk-xxx", "port": 8787 }
 ```
 
 然后在应用里把 Endpoint 填 `http://localhost:8787/v1`，**API Key 留空**（代理会自己加）。
@@ -109,12 +107,13 @@ node proxy.js
 
 | 现象 | 含义 | 处理 |
 |---|---|---|
-| `401` | Key 不对或没带上 | 方舟会返回 `AuthenticationError`；检查是否有空格、是否填错项目 |
-| `403` | Key 无该模型权限 / 账号受限 | 换模型或完成实名 |
-| `404` | 地址拼错 | 方舟要填 `/api/v3`，不要写 `/v1` |
+| `Failed to fetch` / 无法连接 | 请求根本到不了 | 端点填 `localhost:8787` → 代理没启动，双击「启动网页.bat」；端点填官方地址 → 被跨域拦了，改用代理 |
+| `401` | Key 不对或没带上 | 方舟返回 `AuthenticationError`；检查空格、项目是否正确、Key 是否粘全 |
+| `403` | Key 无该模型权限 / 账号受限 | 换模型、开通模型服务或完成实名 |
+| `404` | 地址拼错 | 方舟填 `/api/v3`；通用厂商填到 `/v1` 就停，别把 `/chat/completions` 写两遍 |
 | `429` | 额度用尽或太快 | 充值或降频；本地规则仍可用 |
-| CORS 错误 | 浏览器拦跨域 | 用上面的本地代理 |
-| 超时 | 代理没启动 / 主机写错 / 网络不通 | 先看代理窗口有没有 listening |
+| CORS 错误 | 浏览器拦跨域 | 用本地代理（Endpoint 改 `http://localhost:8787/v1`） |
+| 超时 | 代理没启动 / 主机写错 / 网络不通 | 先看启动窗口里有没有打出代理地址 |
 
 ### 一次评分花多少
 
@@ -161,7 +160,6 @@ node proxy.js
 - 单文件 `index.html`，原生 JS，无构建、无框架、无后端；CSS/JS 全内联
 - 页内 hash 路由 + 普通对象状态
 - 数据模型与需求文档 §7 一致（`sessionRecord` / `errorCollection` / `settings`）
-- 附带的 `serve.js` / `proxy.js` 只在本机运行，用于解决语音安全上下文与 API 跨域，应用本身不依赖它们
 
 ## 已知限制
 
@@ -177,7 +175,7 @@ node proxy.js
 index.html                  # 应用本体（单文件，含全部功能与样式）
 serve.js                    # 本地静态服务（localhost:8080，解决语音安全上下文）
 proxy.js                    # 本地 CORS 代理（localhost:8787 → 上游 AI 接口）
-proxy.config.example.json   # 代理配置模板（默认上游=火山方舟）
+proxy.config.example.json   # 代理配置模板（复制为 proxy.config.json 后填 Key）
 启动网页.bat                # 双击：起静态服务并打开浏览器（Windows）
 启动代理.bat                # 双击：起 CORS 代理（Windows）
 README.md

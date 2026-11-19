@@ -4,6 +4,7 @@
  * 直接双击 index.html（file:///…）时会被拒绝启动。
  *
  * 用法：双击「启动网页.bat」，或在本目录执行 node serve.js
+ * 若同目录存在 proxy.config.json，会顺带把 CORS 代理一起拉起来（一个窗口搞定页面 + 代理）。
  */
 const http = require('http');
 const fs = require('fs');
@@ -50,6 +51,25 @@ function openBrowser(url) {
   else exec('xdg-open "' + url + '"');
 }
 
+function startProxyQuietly() {
+  try {
+    const proxy = require('./proxy');
+    const cfg = proxy.loadConfig();
+    proxy.start(cfg, true);
+    console.log('  AI 代理也已启动（同一个窗口）：');
+    console.log('  http://localhost:' + cfg.port + '/v1  ->  ' + cfg.upstream);
+    if (!cfg.apiKey) {
+      console.log('  ⚠ proxy.config.json 里 apiKey 为空：请在页面「设置 → API Key」里粘贴密钥，');
+      console.log('    或把 Key 写进 proxy.config.json 后重新启动本窗口。');
+    }
+    console.log('');
+  } catch (e) {
+    console.log('  AI 代理未启动：' + e.message);
+    console.log('  （页面仍可用，只是 AI 评分只能走本地规则）');
+    console.log('');
+  }
+}
+
 function listen(port, attempt) {
   const server = http.createServer(handler);
   server.on('error', (err) => {
@@ -68,6 +88,7 @@ function listen(port, attempt) {
     console.log('');
     console.log('  语音识别在这个地址下才可用。关闭此窗口即停止服务。');
     console.log('');
+    startProxyQuietly();
     if (!process.argv.includes('--no-open')) openBrowser(url);
   });
 }
